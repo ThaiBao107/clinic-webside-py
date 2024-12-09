@@ -10,7 +10,7 @@ load_dotenv()  # Tải các biến môi trường từ file .env
 
 app = Flask(__name__)
 app.secret_key = "KJGHJG^&*%&*^T&*(IGFG%ERFTGHCFHGF^&**&TYIU"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345@localhost/myclinic?charset=utf8mb4'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:bao1072004@localhost/clinic?charset=utf8mb4'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 app.config['MAIL_SERVER'] = "smtp.gmail.com"
