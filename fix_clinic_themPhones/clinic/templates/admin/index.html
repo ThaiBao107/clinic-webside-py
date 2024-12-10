@@ -1,0 +1,57 @@
+<!--kế thừa admin/base.html-->
+{% extends 'admin/base.html' %}
+
+#overiding
+{% block body %}
+{% if current_user.is_authenticated and current_user.user_role.value == 'admin'%}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center">
+      <!-- Tiêu đề trang admin -->
+      <h1>Welcome {{ current_user.name }} to admin website</h1>
+      <!-- Form đăng xuất -->
+      <form method="post" action="{{ url_for('user_signout') }}">
+        <button type="submit" class="btn btn-danger">Đăng xuất</button>
+      </form>
+    </div>
+
+    <!-- Các phần tử khác của trang admin sẽ được thêm ở đây -->
+
+  </div>
+
+
+
+
+{% else %} <!-- KHI CHUA DANG NHAP -->
+<div class="container my-5">
+  <div class="row justify-content-center align-items-center">
+    <!-- Cột ảnh -->
+    <div class="col-md-6 text-center">
+      <img src="{{ url_for('static', filename='images/loginAmin.png') }}"
+           alt="Welcome" class="img-fluid rounded shadow" style="max-width: 90%;">
+    </div>
+
+    <!-- Cột form -->
+    <div class="col-md-6">
+      <div class="card p-4 shadow-lg">
+        <h1 class="text-center text-danger">Đăng nhập</h1>
+
+        <form method="post" action="{{ url_for('admin_login') }}" >
+          <div class="form-group">
+            <label for="username">Username: </label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="Nhập tên tài khoản" required/>
+          </div>
+          <div class="form-group">
+            <label for="password">Password: </label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Nhập mật khẩu" required/>
+          </div>
+          <br>
+          <div class="d-flex justify-content-center">
+            <input type="submit" value="Đăng nhập" class="btn btn-danger px-4"/>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
