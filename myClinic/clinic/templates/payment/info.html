@@ -1,0 +1,41 @@
+{% extends "layout/base.html" %}
+{% block content %}
+    {% if user %}
+        <div class="container">
+            <div class="mb-1">
+                <span>Mã bệnh nhân:</span>
+                <span>{{ user.id }}</span>
+            </div>
+            <div class="mb-1">
+                <span>Tên bệnh nhân: </span>
+                <span>{{ user.name }}</span>
+            </div>
+            <div class="mb-1 mt-3">
+                <span>Ngày sinh: {{ user.dob }}</span>
+                <span>{{ user.dob }}</span>
+            </div>
+            <div class="mb-1">
+                <text></text>
+            </div>
+            <div class="mb-1">
+                <text></text>
+            </div>
+            <div class="mb-1">
+                <text></text>
+            </div>
+            <div class="mb-1">
+                <text></text>
+            </div>
+            <div class="mb-1">
+                <text></text>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    {% else %}
+    {% endif %}
+
+
+
+
+{% endblock %}

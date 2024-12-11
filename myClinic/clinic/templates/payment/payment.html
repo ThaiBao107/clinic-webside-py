@@ -1,0 +1,17 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+    <form action="/payment" enctype="multipart/form-data" method="post">
+        <div class="text-center mt-5">
+            <label for="uname" class="form-label">Nhập mã bệnh nhân</label>
+            <input type="text" class="form-control" id="uname" placeholder="Mã bệnh nhân" name="k" required>
+        </div>
+        <div class="d-flex justify-content-center align-items-center">
+            <button class="text-light btn btn-primary">Tìm bệnh nhân</button>
+        </div>
+    </form>
+    {% if mes %}
+        <div class="text-center mt-5"> {{ mes }}</div>
+    {% endif %}
+
+{% endblock %}
