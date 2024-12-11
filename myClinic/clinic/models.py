@@ -2,8 +2,9 @@ from enum import Enum as UserEnum
 from enum import Enum as PaymentOnline
 from enum import Enum as DrugType
 from enum import Enum as DrugUnit
-from typing import re
 
+
+from mypy.types import names
 from sqlalchemy import DateTime, Enum, Column, Integer, String, Float, Boolean, ForeignKey, Date, func, Time, Double
 from sqlalchemy.orm import relationship
 from clinic import app, db, dao
@@ -35,10 +36,11 @@ class User(db.Model, UserMixin):
     avatar = Column(String(255))
     email = Column(String(50))
     user_role = Column(Enum(UserRole), nullable=False)
+    phone = Column(String(50), nullable=False)
     gender = Column(Enum(Gender))
     address = Column(String(255), default='HoChiMinh')
     dob = Column(Date, default=date.today)
-    phones = relationship('Phone', backref='User', lazy=True)
+
 
     def get_token(self):
         serial=Serializer(app.secret_key)
@@ -58,10 +60,10 @@ class User(db.Model, UserMixin):
         return self.name
 
 
-class Phone(db.Model):
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    value = Column(String(50), unique=True, nullable=False)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+# class Phone(db.Model):
+#     id = Column(Integer, primary_key=True, autoincrement=True)
+#     value = Column(String(50), unique=True, nullable=False)
+#     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
 
 
 class Doctor(db.Model):
@@ -194,10 +196,10 @@ class DrugDetail(db.Model):
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
+        #db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
         # db.session.commit()
-        #
-        # # Existing admin, patient, nurse entries
+
+        # Existing admin, patient, nurse entries
         # admin1 = User(
         #     name='admin1',
         #     username='admin1',
@@ -305,5 +307,36 @@ if __name__ == '__main__':
         # db.session.add(appointment3)
         # db.session.add(appointment4)
         # db.session.commit()
-        #
-        #
+
+        n1 = User(name='Ha Vi', username='nurse1', password=str(dao.hash_password('1234')), phone="01234567",
+                  gender=Gender.FEMALE,
+                  address='123 HVC, TPHCM', user_role=UserRole.NURSE, email="2251093n1@gmail.com",
+                  dob=date(2004, 12, 7))
+        n2 = User(name='Thi Huong', username='nurse5', password=str(dao.hash_password('1234')), phone="01234423567",
+                  gender=Gender.FEMALE,
+                  address='12 PVD, TPHCM', user_role=UserRole.NURSE, email="2251093n2@gmail.com",
+                  dob=date(2004, 12, 7))
+        n3 = User(name='Minh Tuyet', username='nurse3', password=str(dao.hash_password('1234')),
+                  phone="012756734567",
+                  gender=Gender.FEMALE,
+                  address='13 NT, TPHCM', user_role=UserRole.NURSE, email="2251093n3@gmail.com",
+                  dob=date(2004, 12, 7))
+        n4 = User(name='Thanh Tung', username='nurse4', password=str(dao.hash_password('1234')),
+                  phone="01234509767",
+                  gender=Gender.MALE,
+                  address='3 ADL, TPHCM', user_role=UserRole.NURSE, email="2251093n4@gmail.com",
+                  dob=date(2004, 12, 7))
+
+        # db.session.add_all([n1, n2, n3, n4])
+        nurse1 = Nurse(id = 11)
+        nurse2 = Nurse(id = 12)
+        nurse3 = Nurse(id = 13)
+        nurse4 = Nurse(id = 14)
+
+        db.session.add(nurse1)
+        db.session.add(nurse2)
+        db.session.add(nurse3)
+        db.session.add(nurse4)
+        db.session.commit()
+
+

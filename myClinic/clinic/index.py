@@ -1,10 +1,14 @@
+# from crypt import methods
+#from crypt import methods
+
 from clinic import app, utils, login, mail, dao
 from flask_login import login_user, logout_user, login_required
-from flask import render_template, request, url_for, redirect, flash, jsonify
+from flask import render_template, request, url_for, redirect, flash, jsonify, session
 import cloudinary.uploader
 from clinic.models import UserRole, Gender, User, Patient, Nurse, Appointment
 from clinic.forms import ResetPasswordForm, ChangePasswordForm
 from flask_mail import Message
+import pickle
 
 
 @app.route("/")
@@ -179,6 +183,32 @@ def delete_appointment(appointment_id):
 @app.route('/register_appointment')
 def register_appointment():
     return render_template('appointment/register_appointment.html')
+
+@app.route('/payment', methods=['get', 'post'])
+def payment_process():
+    mes = ""
+    if request.method.__eq__('POST'):
+        id_patient = request.form.get('k')
+        u = utils.get_user(id_patient)
+
+        if u:
+            if u.user_role.value == 'patient':
+                return redirect(url_for('info_payment1', user = u.id))
+            else:
+                mes = "Khong tim thay thong tin"
+            #user la tham so gui info payment
+        else:
+            mes = "Benh nhan chua dang ky"
+    return render_template('payment/payment.html', mes = mes)
+
+@app.route('/info_payment', methods=['get', 'post'])
+def info_payment1():
+    user_id = request.args.get('user')
+    print(user_id)
+    user = utils.get_user(user_id)
+    print(user)
+    return render_template('payment/info.html', user = user)
+
 
 # ------------------
 if __name__ == "__main__":

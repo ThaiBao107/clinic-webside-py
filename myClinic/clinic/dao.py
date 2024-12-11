@@ -8,3 +8,6 @@ def hash_password(password):
 
 def auth_password(password, hashed):
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+# def search_info_user(user):
+
