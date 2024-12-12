@@ -1,8 +1,9 @@
 # file chứa các hàm xử lý gọi sử lý thêm xóa sửa, kiểm tra v..v
+#from tokenize import u
 
 from clinic import app, db, dao
 from clinic.dao import hash_password
-from clinic.models import User, UserRole, Patient
+from clinic.models import User, UserRole, Patient, MedicalDetails
 
 def add_user(name, username, password, **kwargs):
     password = dao.hash_password(password)
@@ -37,5 +38,11 @@ def get_user_by_id(user_id):
 
 def get_user(user_id):
     return User.query.filter(User.id == user_id).first()
+
+
+def get_medicaldetails(user_id):
+    return MedicalDetails.query.filter(MedicalDetails.patient_id == user_id).first()
+
+
 
 

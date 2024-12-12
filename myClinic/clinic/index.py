@@ -190,10 +190,12 @@ def payment_process():
     if request.method.__eq__('POST'):
         id_patient = request.form.get('k')
         u = utils.get_user(id_patient)
-
+        print(u)
+        m = utils.get_medicaldetails(id_patient)
+        print(m)
         if u:
             if u.user_role.value == 'patient':
-                return redirect(url_for('info_payment1', user = u.id))
+                return render_template('payment/payment.html', user = u, medical = m)
             else:
                 mes = "Khong tim thay thong tin"
             #user la tham so gui info payment
@@ -201,13 +203,13 @@ def payment_process():
             mes = "Benh nhan chua dang ky"
     return render_template('payment/payment.html', mes = mes)
 
-@app.route('/info_payment', methods=['get', 'post'])
-def info_payment1():
-    user_id = request.args.get('user')
-    print(user_id)
-    user = utils.get_user(user_id)
-    print(user)
-    return render_template('payment/info.html', user = user)
+# @app.route('/info_payment', methods=['get', 'post'])
+# def info_payment1():
+#     user_id = request.args.get('user')
+#     print(user_id)
+#     user = utils.get_user(user_id)
+#     print(user)
+#     return render_template('payment/info.html', user = user)
 
 
 # ------------------

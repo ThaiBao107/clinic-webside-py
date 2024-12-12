@@ -1,17 +1,60 @@
 {% extends "layout/base.html" %}
 
 {% block content %}
-    <form action="/payment" enctype="multipart/form-data" method="post">
-        <div class="text-center mt-5">
-            <label for="uname" class="form-label">Nhập mã bệnh nhân</label>
-            <input type="text" class="form-control" id="uname" placeholder="Mã bệnh nhân" name="k" required>
-        </div>
-        <div class="d-flex justify-content-center align-items-center">
-            <button class="text-light btn btn-primary">Tìm bệnh nhân</button>
-        </div>
-    </form>
     {% if mes %}
-        <div class="text-center mt-5"> {{ mes }}</div>
+        <div class="alert alert-danger mt-2"> {{ mes }}</div>
+    {% endif %}
+    {% if user and medical%}
+        <div class="container text-center">
+            <div class="mb-1 mt-3">
+                <span>Mã bệnh nhân:</span>
+                <span>{{ user.id }}</span>
+            </div>
+            <div class="mb-1 mt-3">
+                <span>Tên bệnh nhân: </span>
+                <span>{{ user.name }}</span>
+            </div>
+            <div class="mb-1 mt-3">
+                <span>Ngày sinh: {{ user.dob }}</span>
+                <span>{{ user.dob }}</span>
+            </div>
+           <div class="mb-1">
+                <span>Chuẩn đoán:</span>
+                <span>{{ medical.diagnose }}</span>
+            </div>
+            <div class="mb-1">
+                <span>Triệu chứng:</span>
+                <span>{{ medical.symptoms }}</span>
+            </div>
+            <div class="mb-1">
+                <span>Triệu chứng:</span>
+                <span>{{ medical.symptoms }}</span>
+            </div>
+            <div class="mb-1">
+                <text></text>
+            </div>
+            <div class="mb-1">
+                <text></text>
+            </div>
+            <div class="mb-1">
+                <text></text>
+            </div>
+            <div class="mb-1">
+                <text></text>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    {% else %}
+        <form action="/payment" enctype="multipart/form-data" method="post">
+            <div class="text-center mt-5">
+                <label for="uname" class="form-label">Nhập mã bệnh nhân</label>
+                <input type="text" class="form-control" id="uname" placeholder="Mã bệnh nhân" name="k" required>
+            </div>
+            <div class="d-flex justify-content-center align-items-center">
+                <button class="text-light btn btn-primary">Tìm bệnh nhân</button>
+            </div>
+        </form>
     {% endif %}
 
 {% endblock %}
