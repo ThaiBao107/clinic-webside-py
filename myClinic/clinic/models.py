@@ -3,14 +3,13 @@ from enum import Enum as PaymentOnline
 from enum import Enum as PaymentGateway
 from enum import Enum as DrugType
 from enum import Enum as DrugUnit
-from mypy.types import names
+#from mypy.types import names
 from sqlalchemy import DateTime, Enum, Column, Integer, String, Float, Boolean, ForeignKey, Date, func, Time, Double
 from sqlalchemy.orm import relationship
 from clinic import app, db, dao
 from  datetime import datetime, date
 from flask_login import UserMixin
 from itsdangerous.url_safe import URLSafeSerializer as Serializer
-
 
 
 
@@ -117,7 +116,8 @@ class MedicalDetails(db.Model):
     symptoms= Column(String(50), nullable=False)
     doctor_id = Column(Integer, ForeignKey('Doctor.id'), nullable=False)
     patient_id = Column(Integer, ForeignKey('Patient.id'), nullable=False)
-    payment_id = Column(Integer, ForeignKey('Payment.id'), nullable=False)
+    payment_id = Column(Integer, ForeignKey('Payment.id'), nullable=True)
+
 
 
 class OnlinePayment(Payment):
@@ -182,6 +182,7 @@ class Drug(db.Model):
     quantity = Column(Double, nullable=False)
     category_id = Column(Integer, ForeignKey('CategoriesDrug.id'), nullable=False)
     name = Column(String(50), nullable=False)
+    price = Column(String(20), nullable=False)
 
 
 class CategoriesDrug(db.Model):
@@ -203,7 +204,8 @@ class DrugDetail(db.Model):
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
+        pass
+        #db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
         # db.session.commit()
 
         # Existing admin, patient, nurse entries
@@ -358,11 +360,11 @@ if __name__ == '__main__':
         # # db.session.add(d1)
         # db.session.add(doctor1)
         # db.session.commit()
-
+        #
         # payment1 = OfflinePayment(id = 2, date = date(day=10, month=5, year=2024), sum = 200000, nurse_id = 6)
         # db.session.add(payment1)
         # db.session.commit()
-        # m1 = MedicalDetails(diagnose = "Đau vai", symptoms = "Đau bụng",patient_id = 2, doctor_id = 9, payment_id = 2)
+        # m1 = MedicalDetails(diagnose = "Đau vai", symptoms = "Đau bụng",patient_id = 2, doctor_id = 9)
         # db.session.add(m1)
         # db.session.commit()
 
@@ -375,20 +377,20 @@ if __name__ == '__main__':
         # t3 = Type(name = "Ống")
         # db.session.add_all([u1, u2,u3,t1,t2,t3])
         # db.session.commit()
-
+        #
         # cate1= CategoriesDrug(admin_id = 1)
         # cate2 = CategoriesDrug(admin_id = 1)
         # cate3 = CategoriesDrug(admin_id= 1)
         # db.session.add_all([cate1,cate2,cate3])
         # db.session.commit()
 
-        # dg1 = Drug(drugType = 1, drugUnit =  1, quantity = 50, category_id = 3, name = "Parasitomen") #para
-        # dg2 = Drug(drugType=2, drugUnit=2, quantity=30, category_id=3, name = "Thuốc trị khùng")
-        # dg3 = Drug(drugType=3, drugUnit=3, quantity=50, category_id=3, name = "Thuốc chills")
+        # dg1 = Drug(drugType = 1, drugUnit =  1, quantity = 50, category_id = 3, name = "Parasitomen", price = "50000") #para
+        # dg2 = Drug(drugType=2, drugUnit=2, quantity=30, category_id=3, name = "Thuốc trị khùng", price = "100000")
+        # dg3 = Drug(drugType=3, drugUnit=3, quantity=50, category_id=3, name = "Thuốc chills", price = "20000")
         # db.session.add_all([dg1, dg2, dg3])
         # db.session.commit()
-
-
+        #
+        #
         # drugD1 = DrugDetail(medicalDetails = 1, drug = 2, quatity = 2)
         # drugD2 = DrugDetail(medicalDetails = 1, drug = 3, quatity = 3)
         # drugD3 = DrugDetail(medicalDetails=1, drug=4, quatity=1)

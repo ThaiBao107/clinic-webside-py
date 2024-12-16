@@ -42,7 +42,7 @@ def user_register():
                     res = cloudinary.uploader.upload(avatar)
                     avatar_path = res['secure_url']
                 # kiểm tra mật khẩu xác thực
-                utils.add_user(name=name, username=username,
+                dao.add_user(name=name, username=username,
                                password=password, email=email, avatar=avatar_path,
                                gender=gender, dob=dob, phone=phone, address=address)
                 return redirect(url_for('user_login'))
@@ -60,7 +60,7 @@ def user_login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        user = utils.check_login(username=username, password=password)
+        user = dao.check_login(username=username, password=password)
         if user:
             # Ghi nhan trang thai dang nhap user qua flask_login import login_user
             login_user(user=user)
@@ -76,7 +76,7 @@ def admin_login():
     username = request.form.get('username')
     password = request.form.get('password')
 
-    user = utils.check_login(username=username,
+    user = dao.check_login(username=username,
                              password=password,
                              role=UserRole.ADMIN)
     if user:
@@ -87,7 +87,7 @@ def admin_login():
 
 @login.user_loader
 def user_load(user_id):
-    return utils.get_user_by_id(user_id)
+    return dao.get_user_by_id(user_id)
 
 
 @app.route('/signout', methods=['get', 'post'])
@@ -187,32 +187,27 @@ def register_appointment():
 @app.route('/payment', methods=['get', 'post'])
 def payment_process():
     mes = ""
+    info = None
+    total = 0
     if request.method.__eq__('POST'):
         id_patient = request.form.get('k')
-        u = utils.get_user(id_patient)
-        print(u)
-        m = utils.get_medicaldetails(id_patient)
-        print(m)
-        if u:
+        drug_list = None
+        u = dao.get_user(id_patient)
+        if dao.get_medicaldetails(id_patient):
+            info = dao.get_info(id_patient)
+            drug_list = dao.get_drugDetail(info[0].id)
+            print(drug_list)
+            total = utils.total(info[0].id)
+            print(total)
+        if u and info :
             if u.user_role.value == 'patient':
-                return render_template('payment/payment.html', user = u, medical = m)
-            else:
-                mes = "Khong tim thay thong tin"
-            #user la tham so gui info payment
+                user_doctor = dao.get_user(info[1].id)
+                return render_template('payment/payment.html', user = u, info = info, drug_list = drug_list,
+                                       doctor = user_doctor, total = total)
         else:
-            mes = "Benh nhan chua dang ky"
-    return render_template('payment/payment.html', mes = mes)
+            mes = "Khong tim thay thong tin"
+    return render_template('payment/payment.html', mes=mes)
 
-# @app.route('/info_payment', methods=['get', 'post'])
-# def info_payment1():
-#     user_id = request.args.get('user')
-#     print(user_id)
-#     user = utils.get_user(user_id)
-#     print(user)
-#     return render_template('payment/info.html', user = user)
-
-
-# ------------------
 if __name__ == "__main__":
     # nạp trang admin
     from clinic.admin import *
