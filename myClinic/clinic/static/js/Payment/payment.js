@@ -70,6 +70,66 @@ function displayOnlinePayment() {
     }
     document.getElementById("online_payment").style.display = "block";
 
+
+       // Dữ liệu gửi lên server
+
+}
+
+function callPaymentAPI() {
+    // alert("Online payment")
+    // Gọi API
+    fetch('/api/process_vnpay', {
+        method: 'POST', // POST vì có dữ liệu gửi lên
+        // headers: {
+        //     'Content-Type': 'application/json',
+        // },
+        // body: JSON.stringify(), // Chuyển dữ liệu thành JSON
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // Nếu trả về JSON thì xử lý
+            } else {
+                throw new Error('Thanh toán thất bại.');
+            }
+        })
+        .then(data => {
+            console.log("h1" + data);
+            if (data.payment_url) {
+                // Redirect tới URL của VNPAY
+                window.location.href = data.payment_url;
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi gọi API thanh toán:', error);
+        });
     //xu ly giao dien online payment va goi api online payment o day
     //dung content de xu ly giao dien
 }
+
+
+function checkPaymentStatus() {
+    const queryParams = new URLSearchParams(window.location.search);
+
+    fetch('/payment_return_vnpay?' + queryParams.toString(), {
+        method: 'GET', // GET vì chỉ cần kiểm tra
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('Không thể kiểm tra trạng thái thanh toán.');
+        }
+    })
+    .then(data => {
+        console.log(data);
+        if (data.success) {
+            alert('Thanh toán thành công!');
+        } else {
+            alert('Thanh toán thất bại!');
+        }
+    })
+    .catch(error => {
+        console.error('Lỗi khi kiểm tra trạng thái thanh toán:', error);
+    });
+}
+

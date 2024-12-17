@@ -4,7 +4,8 @@
 # from tokenize import u
 
 from clinic import app, db, utils
-from clinic.models import User, UserRole, Patient, MedicalDetails, DrugDetail, Drug, Type, Doctor
+from clinic.models import User, UserRole, Patient, MedicalDetails, DrugDetail, Drug, Type, Doctor, Payment, \
+    OnlinePayment, PaymentType,PaymentGateway
 
 
 def add_user(name, username, password, **kwargs):
@@ -79,3 +80,19 @@ def get_pay(medical_id =None):
         query = query.filter(MedicalDetails.id == medical_id)
 
     return query.all()
+
+
+def get_payment(medical_id=None):
+    query = db.session.query(MedicalDetails, Payment)\
+    .filter(MedicalDetails.payment_id == Payment.id)
+
+    if query:
+       query = query.filter(MedicalDetails.id == medical_id).all()
+
+    return query
+
+
+def create_payment(date, sum, nurse_id, idGiaoDich):
+    p = OnlinePayment(date=date, sum=sum, nurse_id=nurse_id, paymentType = PaymentGateway.VNPAY, idGiaoDich = idGiaoDich)
+    db.session.add(p)
+    db.session.commit()

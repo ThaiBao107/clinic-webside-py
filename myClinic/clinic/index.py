@@ -1,14 +1,24 @@
 # from crypt import methods
-#from crypt import methods
+# from crypt import methods
+# from crypt import methods
+from sqlalchemy.testing.plugin.plugin_base import config
 
 from clinic import app, utils, login, mail, dao
 from flask_login import login_user, logout_user, login_required
 from flask import render_template, request, url_for, redirect, flash, jsonify, session
 import cloudinary.uploader
+
+from clinic.dao import get_medicaldetails
 from clinic.models import UserRole, Gender, User, Patient, Nurse, Appointment
 from clinic.forms import ResetPasswordForm, ChangePasswordForm
 from flask_mail import Message
+from clinic import settings
+from clinic.decorators import nursesnotloggedin
+import datetime
+from clinic import vnpay
 import pickle
+
+from clinic.vnpay import VNpay
 
 
 @app.route("/")
@@ -43,8 +53,8 @@ def user_register():
                     avatar_path = res['secure_url']
                 # kiểm tra mật khẩu xác thực
                 dao.add_user(name=name, username=username,
-                               password=password, email=email, avatar=avatar_path,
-                               gender=gender, dob=dob, phone=phone, address=address)
+                             password=password, email=email, avatar=avatar_path,
+                             gender=gender, dob=dob, phone=phone, address=address)
                 return redirect(url_for('user_login'))
             else:
                 err_msg = "Mật khẩu không khớp !!"
@@ -77,8 +87,8 @@ def admin_login():
     password = request.form.get('password')
 
     user = dao.check_login(username=username,
-                             password=password,
-                             role=UserRole.ADMIN)
+                           password=password,
+                           role=UserRole.ADMIN)
     if user:
         # Ghi nhan trang thai dang nhap user qua flask_login import login_user
         login_user(user=user)
@@ -165,12 +175,13 @@ def appointment():
                                    patient=patient)
     return redirect(url_for('index'))
 
+
 @app.route('/api/delete-appointment/<appointment_id>', methods=['delete'])
 def delete_appointment(appointment_id):
     try:
         appoint = Appointment.query.get(appointment_id)
         if not appoint:
-          return jsonify({'message': 'Appointment not found'}), 404
+            return jsonify({'message': 'Appointment not found'}), 404
 
         db.session.delete(appoint)
         db.session.commit()
@@ -180,12 +191,14 @@ def delete_appointment(appointment_id):
 
     return jsonify({'message': f'Error occurred: {str(ex)}'}), 500
 
+
 @app.route('/register_appointment')
 def register_appointment():
     return render_template('appointment/register_appointment.html')
 
+
 @app.route('/payment', methods=['get', 'post'])
-def payment_process():
+def payment():
     mes = ""
     info = None
     total = 0
@@ -199,14 +212,180 @@ def payment_process():
             print(drug_list)
             total = utils.total(info[0].id)
             print(total)
-        if u and info :
+        if u and info:
             if u.user_role.value == 'patient':
                 user_doctor = dao.get_user(info[1].id)
-                return render_template('payment/payment.html', user = u, info = info, drug_list = drug_list,
-                                       doctor = user_doctor, total = total)
+                return render_template('payment/payment.html', user=u, info=info, drug_list=drug_list,
+                                       doctor=user_doctor, total=total)
         else:
             mes = "Khong tim thay thong tin"
     return render_template('payment/payment.html', mes=mes)
+
+
+@app.route('/payment_return_vnpay', methods=['GET'])
+@nursesnotloggedin
+def payment_return():
+    inputData = request.args
+    vnp = VNpay()
+    vnp.responseData = inputData.to_dict()
+    vnp_ResponseCode = inputData["vnp_ResponseCode"]
+    vnp_Amount = int(inputData["vnp_Amount"])
+    trans_code = inputData["vnp_BankTranNo"]
+    date1 = inputData["vnp_CreateDate"]
+    transtraction_id = inputData["vnp_TransactionNo"]
+    print(inputData)
+    print(155555)
+    # Kiểm tra tính toàn vẹn của dữ liệu
+    if vnp_ResponseCode == "00":
+        # Lấy thông tin lịch hẹn từ request và thông tin người dùng hiện tại
+        if current_user.role.value == 'nurse':
+            dao.create_payment(date = date1 ,sum=vnp_Amount, nurse_id= current_user.id, idGiaoDich=transtraction_id)
+            flash("Thanh toán thành !", "success")
+            return redirect('/payment')
+        # elif current_user.role.value == 'cashier':
+        #     print(43434)
+        #     dao.create_order_payment(amount=vnp_Amount, gateway='vnpay',
+        #                              patient_id=session.pop('current_patient_id', None), paid=True,
+        #                              response_code=trans_code)
+        #     error = None
+        #     created = True
+        #
+        #     prescription_id = session.pop('prescription_id', None)
+        #     service_price = session.pop('service_price', None)
+        #     medicine_price = session.pop('medicine_price', None)
+        #     create_bill(
+        #         service_price=service_price,
+        #         medicine_price=medicine_price,
+        #         total=vnp_Amount,
+        #         cashier_id=current_user.id,
+        #         prescription_id=prescription_id
+        #     )
+        #     return redirect(url_for('do_bill',
+        #                             prescription_id=prescription_id,
+        #                             error=error,
+        #                             created=created
+        #                             ))
+    else:
+        # Xử lý trường hợp lỗi từ VNPAY
+        return redirect('/')
+
+
+# @app.route('/bills', methods=['GET', 'POST'])
+# @nursesnotloggedin
+# def create_bill():
+#     if request.method == "POST":
+#         get_user = request.form.get('user_id')
+#         get_payment = request.form.get('optradio')
+#         gateway = request.form.get('way')
+#         amount = request.form.get('total')
+#         # session['service_price'] = request.form.get('service_price')
+#         session['medicine_price'] = request.form.get('medicine_price')
+#         get_medical = dao.get_medicaldetails(get_user)
+#         if get_payment == 'radio_offline':
+#             try:
+#                 get_payment = dao.get_payment(get_medical.id)
+#                 if len(get_payment) > 0:
+#                     raise Exception("Bill này có rồi!!!")
+#                 dao.create_payment(
+#                     date=datetime.datetime.now().strftime('%Y-%m-%d'),
+#                     sum=amount,
+#                     nurse_id=current_user.id
+#                 )
+#
+#                 error = None
+#                 created = True
+#             except Exception as e:
+#                 error = str(e)
+#                 created = False
+#             finally:
+#                 return redirect(url_for('create_bill',
+#                                         error=error,
+#                                         created=created
+#                                         ))
+#
+#         elif get_payment == 'radio_online':
+#             if gateway == 'vnpay':
+#                 return redirect(payment_vnpay(amount, get_user, get_medical))
+#             # elif gateway == 'momo':
+#             #     print(amount)
+#             #     print(32423423)
+#             #     pay = process_momo(int(amount))
+#             #     print(pay)
+#             #     return redirect(pay)
+#             return redirect('/payment')
+#         elif get_payment == 'none':
+#             error = "none"
+#             created = False
+#             return redirect(url_for('create_bill',
+#                                     error=error,
+#                                     created=created
+#                                     ))
+#     q_error = request.args.get('error')
+#     q_created = request.args.get('created')
+#     return render_template('cashier/bill.html',
+#                            prescription=current_prescription,
+#                            medicines=current_medicines,
+#                            patient=current_patient,
+#                            medicine_price=medicine_price,
+#                            service_price=service_price,
+#                            is_paid=is_paid,
+#                            total=total,
+#                            error=q_error,
+#                            created=q_created
+#                            )
+#     except Exception as e:
+#     print(str(e))
+
+
+
+
+@app.route('/api/process_vnpay', methods=['POST'])
+def process_vnpay():
+    patient_id = request.form.get('user_id')
+    print(patient_id)
+    medicaldetails = dao.get_medicaldetails(patient_id)
+    total = utils.total(patient_id)
+    print(medicaldetails)
+    if request.method == 'POST':
+        # Process input data from form
+        order_type = "billpayment"
+        order_desc = f"Thanh toán hoá đơn cho bệnh nhân {patient_id}, với số tiền {total} VND"
+        # print(patient.name)
+        # print(patient.id)
+        # print(utils.total(patient.id))  ##so tien thanh toan
+        # print(int(dao.get_quantity_history_payment()))
+        language = "vn"
+        ipaddr = request.remote_addr
+        # Build URL Payment
+        vnp = VNpay()
+        vnp.requestData['vnp_Version'] = '2.1.0'
+        vnp.requestData['vnp_Command'] = 'pay'
+        vnp.requestData['vnp_TmnCode'] = settings.VNPAY_TMN_CODE
+        # vnp.request_data['vnp_Amount'] = int(utils.total(patient.id)) * 100
+        vnp.requestData['vnp_Amount'] = total * 100
+        vnp.requestData['vnp_CurrCode'] = 'VND'
+        # vnp.request_data['vnp_TxnRef'] = dao.get_payment(medicalDetails.id) + 1000
+        vnp.requestData['vnp_TxnRef'] = medicaldetails.id + 1000
+
+        vnp.requestData['vnp_OrderInfo'] = order_desc
+        vnp.requestData['vnp_OrderType'] = order_type
+        vnp.requestData['vnp_Locale'] = language
+        vnp.requestData['vnp_CreateDate'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        vnp.requestData['vnp_IpAddr'] = ipaddr
+        vnp.requestData['vnp_ReturnUrl'] = settings.VNPAY_RETURN_URL
+
+        # Optional: Add bank code if available
+
+        # Generate payment URL
+        vnpay_payment_url = vnp.get_payment_url(settings.VNPAY_PAsYMENT_URL, settings.VNPAY_HASH_SECRET_KEY)
+        print(f"Redirecting to VNPAY: {vnpay_payment_url}")
+
+        # Redirect to VNPAY Payment URL
+        return redirect(vnpay_payment_url)
+    else:
+        return render_template('payment/payment.html', title="Thanh toán")
+
+
 
 if __name__ == "__main__":
     # nạp trang admin

@@ -31,3 +31,9 @@ cloudinary.config(
 )
 
 login = LoginManager(app=app)
+
+VNPAY_RETURN_URL = os.environ.get('VNPAY_RETURN_URL')
+VNPAY_PAYMENT_URL = os.environ.get('VNPAY_PAYMENT_URL')
+VNPAY_API_URL = os.environ.get('VNPAY_API_URL')
+VNPAY_TMN_CODE = os.environ.get('VNPAY_TMN_CODE')
+VNPAY_HASH_SECRET_KEY = os.environ.get('VNPAY_HASH_SECRET_KEY')
