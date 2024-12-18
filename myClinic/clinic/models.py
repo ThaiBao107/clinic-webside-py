@@ -3,6 +3,8 @@ from enum import Enum as PaymentOnline
 from enum import Enum as PaymentGateway
 from enum import Enum as DrugType
 from enum import Enum as DrugUnit
+# from pickletools import I
+
 #from mypy.types import names
 from sqlalchemy import DateTime, Enum, Column, Integer, String, Float, Boolean, ForeignKey, Date, func, Time, Double
 from sqlalchemy.orm import relationship
@@ -31,6 +33,13 @@ class PaymentType(PaymentOnline):
 class PaymentGateway(PaymentGateway):
     MOMO = 'momo'
     VNPAY = 'vnpay'
+
+class BaseModel(db.Model):
+    __abstract__ = True
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    create_date = Column(DateTime, default=func.now())
+    update_date = Column(DateTime, default=func.now(), onupdate=func.now())
+
 
 class User(db.Model, UserMixin):
     __tablename__ = 'User'
@@ -83,7 +92,7 @@ class Doctor(db.Model):
 class Admin(db.Model):
     __tablename__ = 'Admin'
     id = Column(Integer, ForeignKey('User.id'), primary_key=True)
-    categoriesDrugList = relationship('CategoriesDrug', backref='admin', lazy=True)
+
 
 
 class Patient(db.Model):
@@ -106,17 +115,18 @@ class Payment(db.Model):
     date = Column(Date, default=date.today)
     sum = Column(String(20), nullable=False)
     nurse_id = Column(Integer, ForeignKey('Nurse.id'), nullable=False)
-    medicalDetails = relationship('MedicalDetails', backref='Payment', lazy=True)
+    medicaldetail_id = Column(Integer, ForeignKey('MedicalDetails.id'), nullable=False)
 
 
-class MedicalDetails(db.Model):
+class MedicalDetails(BaseModel):
     __tablename__ = 'MedicalDetails'
     id =Column(Integer, primary_key=True, autoincrement=True)
     diagnose = Column(String(50), nullable=False)
     symptoms= Column(String(50), nullable=False)
+    total = Column(Double, nullable=False)
     doctor_id = Column(Integer, ForeignKey('Doctor.id'), nullable=False)
     patient_id = Column(Integer, ForeignKey('Patient.id'), nullable=False)
-    payment_id = Column(Integer, ForeignKey('Payment.id'), nullable=True)
+    payments = relationship('Payment', backref='medicaldetails', lazy=True)
 
 
 
@@ -129,12 +139,6 @@ class OnlinePayment(Payment):
 class OfflinePayment(Payment):
     id = Column(Integer, ForeignKey('Payment.id'), nullable=False, primary_key=True)
 
-
-class BaseModel(db.Model):
-    __abstract__ = True
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    create_date = Column(DateTime, default=func.now())
-    update_date = Column(DateTime, default=func.now(), onupdate=func.now())
 
 class AppointmentList(BaseModel):
     __tablename__ = 'AppointmentList'
@@ -163,49 +167,41 @@ class Appointment(BaseModel):
                 f" trạng thái {self.status}")
 
 
-class Unit(db.Model):
+class Unit(BaseModel):    ## vi, chai, binh
     __tablename__ = 'Unit'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
 
 
-class Type(db.Model):
+class Type(BaseModel):   #Loai thuoc
     __tablename__ = 'Type'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
 
-class Drug(db.Model):
+class Drug(BaseModel):
     __tablename__ = 'Drug'
     id = Column(Integer, primary_key=True, autoincrement=True)
     drugType = Column(Integer, ForeignKey('Type.id'),nullable=False)
     drugUnit = Column(Integer,ForeignKey('Unit.id'), nullable=False)
-    quantity = Column(Double, nullable=False)
-    category_id = Column(Integer, ForeignKey('CategoriesDrug.id'), nullable=False)
+    quantity = Column(Integer, nullable=False)
     name = Column(String(50), nullable=False)
     price = Column(String(20), nullable=False)
 
 
-class CategoriesDrug(db.Model):
-    __tablename__ = 'CategoriesDrug'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    drugs = relationship('Drug', backref='CategoriesDrug', lazy=True)
-    admin_id = Column(Integer, ForeignKey('Admin.id'), nullable=False)
-
-
-class DrugDetail(db.Model):
+class DrugDetail(BaseModel):
     __tablename__ = 'DrugDetail'
     id = Column(Integer, primary_key=True, autoincrement=True)
     medicalDetails = Column(Integer, ForeignKey('MedicalDetails.id') , nullable=False)
     drug = Column(Integer,ForeignKey('Drug.id'), nullable=False)
-    quatity = Column( Double, nullable=False)
+    quantity = Column(Integer, nullable=False)
 
 
 
 
 if __name__ == '__main__':
     with app.app_context():
-        pass
-        #db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
+
+        db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
         # db.session.commit()
 
         # Existing admin, patient, nurse entries
