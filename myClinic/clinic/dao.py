@@ -1,11 +1,12 @@
 # def search_info_user(user):
+#from click.decorators import P
 
 # file chứa các hàm xử lý gọi sử lý thêm xóa sửa, kiểm tra v..v
 # from tokenize import u
 
 from clinic import app, db, utils
 from clinic.models import User, UserRole, Patient, MedicalDetails, DrugDetail, Drug, Type, Doctor, Payment, \
-    OnlinePayment, PaymentType,PaymentGateway
+    OnlinePayment, PaymentType, PaymentGateway, OfflinePayment
 
 
 def add_user(name, username, password, **kwargs):
@@ -46,8 +47,8 @@ def get_user(user_id):
     return User.query.filter(User.id == user_id).first()
 
 
-def get_medicaldetails(user_id):
-    return MedicalDetails.query.filter(MedicalDetails.patient_id == user_id).first()
+def get_medicaldetails(medical_id = None):
+    return MedicalDetails.query.filter(MedicalDetails.id == medical_id).first()
 
 def get_info(user_id = None):
     query = db.session.query(MedicalDetails, Doctor, User)\
@@ -84,7 +85,7 @@ def get_pay(medical_id =None):
 
 def get_payment(medical_id=None):
     query = db.session.query(MedicalDetails, Payment)\
-    .filter(MedicalDetails.payment_id == Payment.id)
+    .filter(MedicalDetails.id == Payment.medicaldetail_id)
 
     if query:
        query = query.filter(MedicalDetails.id == medical_id).all()
@@ -92,7 +93,19 @@ def get_payment(medical_id=None):
     return query
 
 
-def create_payment(date, sum, nurse_id, idGiaoDich):
-    p = OnlinePayment(date=date, sum=sum, nurse_id=nurse_id, paymentType = PaymentGateway.VNPAY, idGiaoDich = idGiaoDich)
+def create_payment(date, sum, nurse_id, idGiaoDich, medical_id):
+    p = OnlinePayment(date=date, sum=sum, nurse_id=nurse_id, paymentType = PaymentGateway.VNPAY, idGiaoDich = idGiaoDich,medicaldetail_id = medical_id)
     db.session.add(p)
     db.session.commit()
+
+
+
+def add_payment(date, sum, nurse_id, medical_id, idGiaoDich, loai):
+    p = None
+    if loai == "radio_offline":
+        p = OfflinePayment(sum = sum, nurse_id =nurse_id, medicaldetail_id = medical_id)
+
+    else:
+        p = OnlinePayment(sum = sum, nurse_id =nurse_id, medicaldetail_id = medical_id,paymentType = PaymentGateway.VNPAY)
+
+    return p

@@ -1,8 +1,8 @@
 function displayOfflinePayment() {
     document.getElementById("online_payment").style.display = "none";
-    alert("hello")
+
     var content = document.getElementById("xuat-hoa-don");
-    alert(content)
+
     while (content.firstChild) {
         content.removeChild(content.lastChild);
     }
@@ -132,4 +132,45 @@ function checkPaymentStatus() {
         console.error('Lỗi khi kiểm tra trạng thái thanh toán:', error);
     });
 }
+
+function mes()
+{
+    alert("Tạo đơn hàng công")
+    var type = ""
+    var id = document.getElementsByName('user_id')[0]
+    var display = document.getElementsByName("optradio")
+    for(var i = 0; i< display.length; i++)
+        if (display[i].checked)
+            if(display[i].value === "radio_online")
+                type = display[i].value
+            else
+                type = display[i].value
+    var data = {user_id:id.value , type_payment : type}
+     fetch('/api/bills', {
+        method: 'POST', // POST vì có dữ liệu gửi lên
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data), // Chuyển dữ liệu thành JSON
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // Nếu trả về JSON thì xử lý
+            } else {
+                throw new Error('Gui khong thanh cong');
+            }
+        })
+        .then(data => {
+            console.log( data);
+            if (data.payment_url) {
+                // Redirect tới URL của VNPAY
+                window.location.href = data.payment_url;
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi gọi API', error);
+        });
+}
+
+
 

@@ -1,6 +1,8 @@
 # from crypt import methods
 # from crypt import methods
 # from crypt import methods
+from calendar import c
+
 from sqlalchemy.testing.plugin.plugin_base import config
 
 from clinic import app, utils, login, mail, dao
@@ -8,13 +10,14 @@ from flask_login import login_user, logout_user, login_required
 from flask import render_template, request, url_for, redirect, flash, jsonify, session
 import cloudinary.uploader
 
-from clinic.dao import get_medicaldetails
-from clinic.models import UserRole, Gender, User, Patient, Nurse, Appointment
+from clinic.dao import get_medicaldetails, create_payment
+from clinic.models import UserRole, Gender, User, Patient, Nurse, Appointment, OfflinePayment, OnlinePayment
 from clinic.forms import ResetPasswordForm, ChangePasswordForm
 from flask_mail import Message
 from clinic import settings
 from clinic.decorators import nursesnotloggedin
-import datetime
+from datetime import datetime
+
 from clinic import vnpay
 import pickle
 
@@ -25,7 +28,9 @@ from clinic.vnpay import VNpay
 def index():
     return render_template("index.html")
 
-
+@app.route("/home")
+def home():
+    return render_template("index.html")
 @app.route('/register', methods=['get', 'post'])
 def user_register():
     err_msg = ""
@@ -144,7 +149,7 @@ def reset_token(token):
         return redirect(url_for('reset_password'))  # chuyển về trang chủ nhập lại mail nếu không thấy người dùng!
     form = ChangePasswordForm()
     if form.validate_on_submit():
-        hashed_password = dao.hash_password(form.password.data.strip())
+        hashed_password = utils.hash_password(form.password.data.strip())
         user.password = hashed_password
         db.session.commit()
         flash('Password đã thay đổi!', 'Success')
@@ -198,32 +203,68 @@ def register_appointment():
 
 
 @app.route('/payment', methods=['get', 'post'])
+# @nursesnotloggedin
 def payment():
     mes = ""
     info = None
     total = 0
     if request.method.__eq__('POST'):
-        id_patient = request.form.get('k')
-        drug_list = None
-        u = dao.get_user(id_patient)
-        if dao.get_medicaldetails(id_patient):
-            info = dao.get_info(id_patient)
-            drug_list = dao.get_drugDetail(info[0].id)
-            print(drug_list)
-            total = utils.total(info[0].id)
-            print(total)
-        if u and info:
-            if u.user_role.value == 'patient':
-                user_doctor = dao.get_user(info[1].id)
-                return render_template('payment/payment.html', user=u, info=info, drug_list=drug_list,
-                                       doctor=user_doctor, total=total)
+        medical_id = request.form.get('k')
+        if dao.get_medicaldetails(medical_id):
+            drug_list = None
+            m = dao.get_medicaldetails(medical_id)
+            print(m)
+            u = dao.get_user(m.patient_id)
+            print(u)
+            if m:
+                info = dao.get_info(m.patient_id)
+                drug_list = dao.get_drugDetail(m.id)
+                print(drug_list)
+                total = utils.total(m.id)
+                print(total)
+            if m and info:
+                if u.user_role.value == 'patient':
+                    user_doctor = dao.get_user(info[1].id)
+                    return render_template('payment/payment.html', user=u, info=info, drug_list=drug_list,
+                                           doctor=user_doctor, total=total)
         else:
-            mes = "Khong tim thay thong tin"
+                mes = "Khong tim thay thong tin"
     return render_template('payment/payment.html', mes=mes)
 
 
+
+# @app.route('/create_bill', methods=['get', 'post'])
+# def create_bill():
+#     mes = ""
+#     info = None
+#     total = 0
+#     drug_list = None
+#     info = None
+#     if current_user.user_role.value == 'patient':
+#         if request.method.__eq__('POST'):
+#             id = request.form.get('user_id')
+#
+#             u = dao.get_user(id)
+#             print(u)
+#             if u:
+#                 info = dao.get_info(id)
+#                 print(info)
+#                 drug_list = dao.get_drugDetail(2)
+#                 print(drug_list)
+#                 total = utils.total(3)
+#                 print(total)
+#                 if u and info:
+#                     if u.user_role.value == 'patient':
+#                         user_doctor = dao.get_user(info[1].id)
+#                         return render_template('payment/info.html', user=u, info=info, drug_list=drug_list,
+#                                                doctor=user_doctor, total=total)
+#                 else:
+#                     mes = "Khong tim thay thong tin"
+#     return render_template('payment/info.html', mes=mes)
+
+
 @app.route('/payment_return_vnpay', methods=['GET'])
-@nursesnotloggedin
+# @nursesnotloggedin
 def payment_return():
     inputData = request.args
     vnp = VNpay()
@@ -270,72 +311,31 @@ def payment_return():
         return redirect('/')
 
 
-# @app.route('/bills', methods=['GET', 'POST'])
-# @nursesnotloggedin
-# def create_bill():
-#     if request.method == "POST":
-#         get_user = request.form.get('user_id')
-#         get_payment = request.form.get('optradio')
-#         gateway = request.form.get('way')
-#         amount = request.form.get('total')
-#         # session['service_price'] = request.form.get('service_price')
-#         session['medicine_price'] = request.form.get('medicine_price')
-#         get_medical = dao.get_medicaldetails(get_user)
-#         if get_payment == 'radio_offline':
-#             try:
-#                 get_payment = dao.get_payment(get_medical.id)
-#                 if len(get_payment) > 0:
-#                     raise Exception("Bill này có rồi!!!")
-#                 dao.create_payment(
-#                     date=datetime.datetime.now().strftime('%Y-%m-%d'),
-#                     sum=amount,
-#                     nurse_id=current_user.id
-#                 )
-#
-#                 error = None
-#                 created = True
-#             except Exception as e:
-#                 error = str(e)
-#                 created = False
-#             finally:
-#                 return redirect(url_for('create_bill',
-#                                         error=error,
-#                                         created=created
-#                                         ))
-#
-#         elif get_payment == 'radio_online':
-#             if gateway == 'vnpay':
-#                 return redirect(payment_vnpay(amount, get_user, get_medical))
-#             # elif gateway == 'momo':
-#             #     print(amount)
-#             #     print(32423423)
-#             #     pay = process_momo(int(amount))
-#             #     print(pay)
-#             #     return redirect(pay)
-#             return redirect('/payment')
-#         elif get_payment == 'none':
-#             error = "none"
-#             created = False
-#             return redirect(url_for('create_bill',
-#                                     error=error,
-#                                     created=created
-#                                     ))
-#     q_error = request.args.get('error')
-#     q_created = request.args.get('created')
-#     return render_template('cashier/bill.html',
-#                            prescription=current_prescription,
-#                            medicines=current_medicines,
-#                            patient=current_patient,
-#                            medicine_price=medicine_price,
-#                            service_price=service_price,
-#                            is_paid=is_paid,
-#                            total=total,
-#                            error=q_error,
-#                            created=q_created
-#                            )
-#     except Exception as e:
-#     print(str(e))
 
+
+@app.route('/api/bills', methods=['GET', 'POST'])
+def create_bill():
+    if request.method == "POST":
+        data = request.get_json()
+        id = data.get('user_id')
+        type = data.get('type_payment')
+        print(id)
+        print(type)
+        info = dao.get_info(id)
+        total = utils.total(info[0].id)
+        print(info)
+        p = None
+        if type == "radio_offline":
+            print(1)
+            p = dao.add_payment(date = datetime.now(), sum = total, nurse_id =4, medical_id = info[0].id,
+                                idGiaoDich = None, loai = type)  #fix lai xem sao de lam cho y ta dung
+        else:
+            print(2)
+            p =dao.add_payment(date=datetime.now(), sum=total, nurse_id=4, medical_id=info[0].id,
+                                idGiaoDich=None, loai=type)  # fix lai xem sao de lam cho y ta dung
+        db.session.add(p)
+        db.session.commit()
+    return render_template('index.html')
 
 
 
@@ -377,7 +377,7 @@ def process_vnpay():
         # Optional: Add bank code if available
 
         # Generate payment URL
-        vnpay_payment_url = vnp.get_payment_url(settings.VNPAY_PAsYMENT_URL, settings.VNPAY_HASH_SECRET_KEY)
+        vnpay_payment_url = vnp.get_payment_url(settings.VNPAY_PAYMENT_URL, settings.VNPAY_HASH_SECRET_KEY)
         print(f"Redirecting to VNPAY: {vnpay_payment_url}")
 
         # Redirect to VNPAY Payment URL

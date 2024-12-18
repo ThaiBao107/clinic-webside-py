@@ -18,6 +18,6 @@ def total(medical_id = None):
     print(drugdetail)
     sum = 0
     for item in drugdetail:
-        sum += float(item[0].price) * item[1].quatity
+        sum += float(item[0].price) * item[1].quantity
     sum += app.config['SUM']
     return sum
