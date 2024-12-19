@@ -1,6 +1,7 @@
 from enum import Enum as UserEnum
 from enum import Enum as PaymentOnline
 from enum import Enum as PaymentGateway
+from enum import Enum as TrangThai
 from enum import Enum as DrugType
 from enum import Enum as DrugUnit
 # from pickletools import I
@@ -12,7 +13,7 @@ from clinic import app, db, dao
 from  datetime import datetime, date
 from flask_login import UserMixin
 from itsdangerous.url_safe import URLSafeSerializer as Serializer
-# from clinic import utils
+from clinic import utils
 # from clinic.index import payment
 # from clinic.utils import total
 
@@ -57,6 +58,7 @@ class User(db.Model, UserMixin):
     gender = Column(Enum(Gender))
     address = Column(String(255), default='HoChiMinh')
     dob = Column(Date, default=date.today)
+
 
 
     def get_token(self):
@@ -124,7 +126,7 @@ class Payment(db.Model):
     sum = Column(String(20), nullable=False)
     nurse_id = Column(Integer, ForeignKey('Nurse.id'), nullable=False)
     medicaldetail_id = Column(Integer, ForeignKey('MedicalDetails.id'), nullable=False)
-
+    trangthai = Column(String(20), nullable=True)
 
 class MedicalDetails(BaseModel):
     __tablename__ = 'MedicalDetails'
@@ -163,6 +165,12 @@ class Status(UserEnum):
     CONFIRMED = 'confirmed' #đã xác nhận
     CANCELED = 'canceled' # bị hủy
     COMPLETED = 'completed'  # Đã khám bệnh - bác sĩ tự xác nhận
+
+
+class Condition(TrangThai):
+    PAID = 'paid'
+    UNPAID = "unpaid"
+    ERROR = "error"
 
 class Appointment(BaseModel):
     __tablename__ = 'Appointment'
@@ -219,11 +227,11 @@ if __name__ == '__main__':
     with app.app_context():
         pass
         #db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
-        # db.session.commit()
+        #db.session.commit()
 
         # Existing admin, patient, nurse entries
 
-        #    # admin1 = User( name='admin1',
+        # admin1 = User(name='admin1',
         #     username='admin1',
         #     password=str(utils.hash_password("123")),  # Mật khẩu được băm
         #     avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
@@ -231,8 +239,7 @@ if __name__ == '__main__':
         #     user_role=UserRole.ADMIN,
         #     gender=Gender.FEMALE,
         #     phone='0708602388',
-        #     dob=date(2004, 7, 23)
-        # )
+        #     dob=date(2004, 7, 23))
         # db.session.add(admin1)
         # db.session.commit()
         # admin_entry = Admin(id=admin1.id)
@@ -287,7 +294,7 @@ if __name__ == '__main__':
         # db.session.add(nurse_entry1)
         # db.session.commit()
         #
-        # # Create appointment lists
+        # # # Create appointment lists
         # appointment_list1 = AppointmentList(schedule_date=date(2024, 12, 5), nurse_id=nurse1.id)
         # appointment_list2 = AppointmentList(schedule_date=date(2024, 12, 6), nurse_id=nurse1.id)
         # db.session.add(appointment_list1)
@@ -351,10 +358,10 @@ if __name__ == '__main__':
         #
         # db.session.add_all([n1, n2, n3, n4])
         # db.session.commit()
-        # nurse1 = Nurse(id = 5)
-        # nurse2 = Nurse(id = 6)
-        # nurse3 = Nurse(id = 7)
-        # nurse4 = Nurse(id = 8)
+        # nurse1 = Nurse(id = 8)
+        # nurse2 = Nurse(id = 9)
+        # nurse3 = Nurse(id = 10)
+        # nurse4 = Nurse(id = 11)
         #
         # db.session.add(nurse1)
         # db.session.add(nurse2)
@@ -369,21 +376,21 @@ if __name__ == '__main__':
         #           dob=date(2004, 1, 7))
         # db.session.add(d1)
         # db.session.commit()
-        # doctor1 = Doctor(id = 9, specialization = "Nội soi",degree = "Chuyên khoa I", experience = "6")
+        # doctor1 = Doctor(id = 12, specialization = "Nội soi",degree = "Chuyên khoa I", experience = "6")
         # # db.session.add(d1)
         # db.session.add(doctor1)
         # db.session.commit()
-        # m1 = MedicalDetails(diagnose="Thiếu máu", symptoms="Bệnh ngoài da",total = 300000, patient_id=2, doctor_id=9)
+        # m1 = MedicalDetails(diagnose="Thiếu máu", symptoms="Bệnh ngoài da",total = 300000, patient_id=5, doctor_id=12)
         # db.session.add(m1)
         # db.session.commit()
-        # payment1 = OfflinePayment(id = 2, date = date(day=10, month=5, year=2024), sum = 200000, nurse_id = 6)
+        # payment1 = OfflinePayment(medicaldetail_id = 2 , date = date(day=10, month=5, year=2024), sum = 200000, nurse_id = 7, trangthai=Condition.PAID)
         # db.session.add(payment1)
         # db.session.commit()
-        # payment2 = OnlinePayment(date = datetime.now(), sum = 300000, nurse_id = 4, medicaldetail_id = 1,  idGiaoDich = "123",paymentType = PaymentGateway.VNPAY)
+        # payment2 = OnlinePayment(date = datetime.now(), sum = 300000, nurse_id = 7, medicaldetail_id = 2,  idGiaoDich = "123",paymentType = PaymentGateway.VNPAY)
         # db.session.add(payment2)
         # db.session.commit()
 
-        ## them thuốc
+        # them thuốc
         # u1 = Unit(name = "Chai")
         # u2 = Unit(name = "Vĩ")
         # u3 = Unit(name = "Ống")
@@ -398,11 +405,11 @@ if __name__ == '__main__':
         # dg3 = Drug(drugType=1, drugUnit=3, quantity=10, name = "Thuốc chills", price = "20000")
         # db.session.add_all([dg1, dg2, dg3])
         # db.session.commit()
-        #
-        #
-        # drugD1 = DrugDetail(medicalDetails = 2, drug = 4, quantity = 12)
-        # drugD2 = DrugDetail(medicalDetails = 2, drug = 5, quantity = 3)
-        # drugD3 = DrugDetail(medicalDetails=2, drug=6, quantity=10)
+
+
+        # drugD1 = DrugDetail(medicalDetails = 2, drug = 1, quantity = 12)
+        # drugD2 = DrugDetail(medicalDetails = 2, drug = 2, quantity = 3)
+        # drugD3 = DrugDetail(medicalDetails=2, drug=3, quantity=10)
         # db.session.add_all([drugD1, drugD2, drugD3])
         # db.session.commit()
 

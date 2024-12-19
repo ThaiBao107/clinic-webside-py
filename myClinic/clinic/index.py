@@ -3,6 +3,9 @@
 # from crypt import methods
 from calendar import c
 
+from sqlalchemy import Double
+#from crypt import methods
+
 from sqlalchemy.testing.plugin.plugin_base import config
 
 from clinic import app, utils, login, mail, dao
@@ -11,7 +14,7 @@ from flask import render_template, request, url_for, redirect, flash, jsonify, s
 import cloudinary.uploader
 
 from clinic.dao import get_medicaldetails, create_payment
-from clinic.models import UserRole, Gender, User, Patient, Nurse, Appointment, OfflinePayment, OnlinePayment
+from clinic.models import Condition,UserRole, Gender, User, Patient, Nurse, Appointment, OfflinePayment, OnlinePayment
 from clinic.forms import ResetPasswordForm, ChangePasswordForm
 from flask_mail import Message
 from clinic import settings
@@ -213,15 +216,15 @@ def payment():
         if dao.get_medicaldetails(medical_id):
             drug_list = None
             m = dao.get_medicaldetails(medical_id)
-            print(m)
+
             u = dao.get_user(m.patient_id)
-            print(u)
+
             if m:
                 info = dao.get_info(m.patient_id)
                 drug_list = dao.get_drugDetail(m.id)
-                print(drug_list)
+
                 total = utils.total(m.id)
-                print(total)
+
             if m and info:
                 if u.user_role.value == 'patient':
                     user_doctor = dao.get_user(info[1].id)
@@ -315,27 +318,61 @@ def payment_return():
 
 @app.route('/api/bills', methods=['GET', 'POST'])
 def create_bill():
-    if request.method == "POST":
+    if request.method.__eq__('POST'):
         data = request.get_json()
         id = data.get('user_id')
         type = data.get('type_payment')
+        tientra = data.get('tien_tra')
+        print(tientra)
+        #neu thanh toan online
         print(id)
         print(type)
+        tientra_off = ""
         info = dao.get_info(id)
-        total = utils.total(info[0].id)
-        print(info)
+        # print(info)
+        if type == "radio_offline":
+            tientra_off = utils.total(info[2].id)
+            print(tientra_off)
+
         p = None
         if type == "radio_offline":
             print(1)
-            p = dao.add_payment(date = datetime.now(), sum = total, nurse_id =4, medical_id = info[0].id,
+            p = dao.add_payment(date = datetime.now(), sum = tientra_off, nurse_id =8, medical_id = info[0].id,
                                 idGiaoDich = None, loai = type)  #fix lai xem sao de lam cho y ta dung
         else:
             print(2)
-            p =dao.add_payment(date=datetime.now(), sum=total, nurse_id=4, medical_id=info[0].id,
+            p =dao.add_payment(date=datetime.now(), sum=tientra, nurse_id=8, medical_id=info[0].id,
                                 idGiaoDich=None, loai=type)  # fix lai xem sao de lam cho y ta dung
         db.session.add(p)
         db.session.commit()
+        print("Xong ")
     return render_template('index.html')
+
+
+
+@app.route('/paymentlist', methods=['GET', 'POST'])
+def paymentlist():
+    mess = None
+    id = current_user.id
+    info = dao.get_info(id)
+    print(info)
+    if info:
+        payment = dao.get_payment(medical_id=info[0].id)
+        return render_template('payment/paymentlist.html', payment = payment)
+    else:
+        mess = "Chua co hoa don"
+
+    return render_template('payment/paymentlist.html', mess)
+
+
+@app.route('/info_payment', methods=['GET', 'POST'])
+def info_payment():
+    id = current_user.id
+    info = dao.get_info(id)
+    drug_list = dao.get_drugDetail(info[0].id)
+    total = utils.total(info[0].id)
+    return render_template('payment/info.html',total = total, info=info, drug_list = drug_list)
+
 
 
 

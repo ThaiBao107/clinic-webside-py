@@ -1,0 +1,44 @@
+{% extends "layout/base.html" %}
+<style>
+    input {
+        width: 200px;
+        height: 30px;
+    }
+</style>
+
+{% block content %}
+    <script src="{{ url_for('static', filename='js/Payment/payment.js') }}"></script>
+    {#    {% if mes %}#}
+    {#        <div class="alert alert-danger mt-2"> {{ mes }}</div>#}
+    {#    {% endif %}#}
+    {% if payment %}
+        <h1 style="text-align: center; color: red;">Danh sách các hóa đơn thanh toán online</h1>
+        <div class="container-fluid">
+            <form action="/info_payment" enctype="multipart/form-data" method="post">
+            <ul class="list-group w-100 h-auto">
+                {% for m,p in payment %}
+                    <li class="list-group-item">
+                        <ul class="list-unstyled">
+                            <li><label class="form-label">Hóa đơn:</label>
+                                <label class="form-label">{{ p.id }}</label>
+                            </li>
+                            <li><label class="form-label">Phiếu khám bệnh:</label>
+                                <label class="form-label">{{ m.id }}</label>
+                            </li>
+                            <li><label class="form-label">Tổng tiền:</label>
+                                <label class="form-label">{{ p.sum }}</label>
+                            </li>
+                        </ul>
+                        <div class="d-flex ">
+                            <button class="text-light btn btn-primary">Thanh toán</button>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </form>
+        </div>
+    {% else %}
+        <div class="alert alert-success mt-3 mb-3"> mes</div>
+    {% endif %}
+
+{% endblock %}

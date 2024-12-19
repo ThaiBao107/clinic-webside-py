@@ -5,7 +5,7 @@
 # from tokenize import u
 
 from clinic import app, db, utils
-from clinic.models import User, UserRole, Patient, MedicalDetails, DrugDetail, Drug, Type, Doctor, Payment, \
+from clinic.models import Condition,User, UserRole, Patient, MedicalDetails, DrugDetail, Drug, Type, Doctor, Payment, \
     OnlinePayment, PaymentType, PaymentGateway, OfflinePayment
 
 
@@ -93,6 +93,11 @@ def get_payment(medical_id=None):
     return query
 
 
+# def get_Payment(payment_id=None):
+
+
+
+
 def create_payment(date, sum, nurse_id, idGiaoDich, medical_id):
     p = OnlinePayment(date=date, sum=sum, nurse_id=nurse_id, paymentType = PaymentGateway.VNPAY, idGiaoDich = idGiaoDich,medicaldetail_id = medical_id)
     db.session.add(p)
@@ -103,9 +108,9 @@ def create_payment(date, sum, nurse_id, idGiaoDich, medical_id):
 def add_payment(date, sum, nurse_id, medical_id, idGiaoDich, loai):
     p = None
     if loai == "radio_offline":
-        p = OfflinePayment(sum = sum, nurse_id =nurse_id, medicaldetail_id = medical_id)
+        p = OfflinePayment(sum = sum, nurse_id =nurse_id, medicaldetail_id = medical_id, trangthai = Condition.PAID)
 
     else:
-        p = OnlinePayment(sum = sum, nurse_id =nurse_id, medicaldetail_id = medical_id,paymentType = PaymentGateway.VNPAY)
+        p = OnlinePayment(sum = sum, nurse_id =nurse_id, medicaldetail_id = medical_id, paymentType = PaymentGateway.VNPAY)
 
     return p

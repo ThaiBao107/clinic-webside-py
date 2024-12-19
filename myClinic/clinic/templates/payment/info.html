@@ -11,7 +11,7 @@
     {% if mes %}
         <div class="alert alert-danger mt-2"> {{ mes }}</div>
     {% endif %}
-    {% if user and info %}
+    {% if info %}
         <form action="/api/process_vnpay" enctype="multipart/form-data" method="POST">
             <h2 style="text-align: center">Thanh toán hóa đơn</h2>
             <div class="container1">
@@ -19,39 +19,32 @@
                     <h4 style="text-align: center">Thông tin bệnh nhân</h4>
                     <div class="mb-1">
                         <label class="form-label">Mã bệnh nhân:</label>
-                        <input type="text" class="form-control" value="{{ user.id }}" readonly
+                        <input type="text" class="form-control" value="{{ info[2].id }}" readonly
                                style="width: 300px; height: 30px;" name="user_id">
                     </div>
                     <div class="mb-1">
                         <label class="form-label">Tên bệnh nhân:</label>
-                        <input type="text" class="form-control" value="{{ user.name }}" readonly
+                        <input type="text" class="form-control" value="{{ info[2].name }}" readonly
                                style="width: 300px; height: 30px;">
                     </div>
                     <div class="mb-1">
                         <label class="form-label">Ngày sinh:</label>
-                        <input type="date" class="form-control" value="{{ user.dob }}" readonly
-                               style="width: 300px; height: 30px;">
-                    </div>
-                    <div class="mb-1">
-                        <label class="form-label">Bác sỉ:</label>
-                        <input type="text" class="form-control" value="{{ doctor.name }}" readonly
+                        <input type="date" class="form-control" value="{{ info[2].dob }}" readonly
                                style="width: 300px; height: 30px;">
                     </div>
                     <div class="mb-1">
                         <label class="form-label">Triệu chứng:</label>
-                                            <input type="text-area" class="form-control" value="{{ medical.symptoms }}" readonly style="width: 200px; height: 30px;">
+
                         <input type="text" class="form-control" value="{{ info[0].symptoms }} " readonly
                                id="input_payment">
-                                             <textarea class="form-label" readonly
-                                                      style="width: 350px; height: 70px; display: block; margin: 0;">{{ medical.symptoms }}</textarea>
+
                     </div>
                     <div class="mb-1">
                         <label class="form-label">Chuẩn đoán:</label>
-                                            <input type="text-area" class="form-control" value="{{ medical.symptoms }}" readonly style="width: 200px; height: 30px;">
+
                         <input type="text" class="form-control" value="{{ info[0].diagnose }}" readonly
                                id="input_payment">
-                                            <textarea class="form-label" readonly
-                                                      style="width: 350px; height: 70px; display: block; margin: 0;">{{ medical.diagnose }}</textarea>
+
                     </div>
 
 
@@ -98,7 +91,6 @@
                                 <td>1</td>
                                 <td>100000</td>
                                 <td name="medicine_price">100000</td>
-                                s
                             </tr>
                             </tbody>
                         </table>
@@ -109,58 +101,58 @@
                         </div>
                     {% endif %}
             </div>
-            <div class="container2">
-                <div class="form-floating mt-3 mb-3 d-flex justify-content-around">
-                    <div class="form-check">
-                        <input type="radio"
-                               class="form-check-input"
-                               id="radio_online"
-                               name="optradio"
-                               onclick="displayOnlinePayment()"
-                               value="radio_online">
+            {#            <div class="container2">#}
+            {#                <div class="form-floating mt-3 mb-3 d-flex justify-content-around">#}
+            {#                    <div class="form-check">#}
+            {#                        <input type="radio"#}
+            {#                               class="form-check-input"#}
+            {#                               id="radio_online"#}
+            {#                               name="optradio"#}
+            {#                               onclick="displayOnlinePayment()"#}
+            {#                               value="radio_online">#}
+            {##}
+            {#                        <label class="form-check-label" for="radio_online">Thanh toán Online</label>#}
+            {#                    </div>#}
+            {#                    <div class="form-check">#}
+            {#                        <input type="radio"#}
+            {#                               class="form-check-input"#}
+            {#                               id="radio_offline"#}
+            {#                               name="optradio"#}
+            {#                               onclick="displayOfflinePayment()"#}
+            {#                               value="radio_offline">#}
+            {#                        <label class="form-check-label" for="radio_offline">Thanh toán trực tiếp</label>#}
+            {#                    </div>#}
+            {#                </div>#}
+            <div id="xuat-hoa-don">
+            </div>
 
-                        <label class="form-check-label" for="radio_online">Thanh toán Online</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="radio"
-                               class="form-check-input"
-                               id="radio_offline"
-                               name="optradio"
-                               onclick="displayOfflinePayment()"
-                               value="radio_offline">
-                        <label class="form-check-label" for="radio_offline">Thanh toán trực tiếp</label>
-                    </div>
-                </div>
-                <div id="xuat-hoa-don">
-                </div>
 
-
-                <div style="display: none" id="online_payment" class="online_payment">
-                    <div class="mb-3" id="gateway" style="display: block;">
-                        <p class="mb-2">Cổng thanh toán:</p>
-                        <div class="d-flex justify-content-center mb-3">
-                            <div class="form-check me-3" style="padding: 5px 50px 0 0;">
-                                <label class="form-check-label" for="vnpay">VNPAY</label>
-                                <img src="/static/images/vnpay.jpg" style="width: 50px" alt="VNPAY"
-                                     class="payment-icon">
-                                <input class="form-check-input" type="radio" name="way" id="vnpay" value="vnpay">
-                            </div>
-                            <div class="form-check" style="padding: 5px 0 0 50px;">
-                                <label class="form-check-label" for="momo">MOMO</label>
-                                <img src="/static/images/OIP.jpg" style="width: 50px" alt="MOMO" class="payment-icon">
-                                <input class="form-check-input" type="radio" name="way" id="momo" value="momo">
-                            </div>
+            <div style="display: none" id="online_payment" class="online_payment">
+                <div class="mb-3" id="gateway" style="display: block;">
+                    <p class="mb-2">Cổng thanh toán:</p>
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="form-check me-3" style="padding: 5px 50px 0 0;">
+                            <label class="form-check-label" for="vnpay">VNPAY</label>
+                            <img src="/static/images/vnpay.jpg" style="width: 50px" alt="VNPAY"
+                                 class="payment-icon">
+                            <input class="form-check-input" type="radio" name="way" id="vnpay" value="vnpay">
                         </div>
-
-                        <div class="d-grid">
-                            <button class="btn btn-primary"
-                                    style="display: block;" onclick="callPaymentAPI()">Thanh toán
-                            </button>
+                        <div class="form-check" style="padding: 5px 0 0 50px;">
+                            <label class="form-check-label" for="momo">MOMO</label>
+                            <img src="/static/images/OIP.jpg" style="width: 50px" alt="MOMO" class="payment-icon">
+                            <input class="form-check-input" type="radio" name="way" id="momo" value="momo">
                         </div>
-
-
                     </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-primary"
+                                style="display: block;" onclick="callPaymentAPI()">Thanh toán
+                        </button>
+                    </div>
+
+
                 </div>
+            </div>
         </form>
 
 
