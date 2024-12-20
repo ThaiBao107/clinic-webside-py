@@ -7,7 +7,7 @@
 </style>
 
 {% block content %}
-    <script src="{{ url_for('static', filename='js/Payment/payment.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/Payment/callAPI.js') }}"></script>
     {% if mes %}
         <div class="alert alert-danger mt-2"> {{ mes }}</div>
     {% endif %}
@@ -101,33 +101,33 @@
                         </div>
                     {% endif %}
             </div>
-            {#            <div class="container2">#}
-            {#                <div class="form-floating mt-3 mb-3 d-flex justify-content-around">#}
-            {#                    <div class="form-check">#}
-            {#                        <input type="radio"#}
-            {#                               class="form-check-input"#}
-            {#                               id="radio_online"#}
-            {#                               name="optradio"#}
-            {#                               onclick="displayOnlinePayment()"#}
-            {#                               value="radio_online">#}
-            {##}
-            {#                        <label class="form-check-label" for="radio_online">Thanh toán Online</label>#}
-            {#                    </div>#}
-            {#                    <div class="form-check">#}
-            {#                        <input type="radio"#}
-            {#                               class="form-check-input"#}
-            {#                               id="radio_offline"#}
-            {#                               name="optradio"#}
-            {#                               onclick="displayOfflinePayment()"#}
-            {#                               value="radio_offline">#}
-            {#                        <label class="form-check-label" for="radio_offline">Thanh toán trực tiếp</label>#}
-            {#                    </div>#}
-            {#                </div>#}
-            <div id="xuat-hoa-don">
-            </div>
+{#                        <div class="container2">#}
+{#                            <div class="form-floating mt-3 mb-3 d-flex justify-content-around">#}
+{#                                <div class="form-check">#}
+{#                                    <input type="radio"#}
+{#                                           class="form-check-input"#}
+{#                                           id="radio_online"#}
+{#                                           name="optradio"#}
+{#                                           onclick="displayOnlinePayment()"#}
+{#                                           value="radio_online">#}
+{##}
+{#                                    <label class="form-check-label" for="radio_online">Thanh toán Online</label>#}
+{#                                </div>#}
+{#                                <div class="form-check">#}
+{#                                    <input type="radio"#}
+{#                                           class="form-check-input"#}
+{#                                           id="radio_offline"#}
+{#                                           name="optradio"#}
+{#                                           onclick="displayOfflinePayment()"#}
+{#                                           value="radio_offline">#}
+{#                                    <label class="form-check-label" for="radio_offline">Thanh toán trực tiếp</label>#}
+{#                                </div>#}
+{#                            </div>#}
+{#            <div id="xuat-hoa-don">#}
+{#            </div>#}
 
 
-            <div style="display: none" id="online_payment" class="online_payment">
+            <div  id="online_payment" class="online_payment">
                 <div class="mb-3" id="gateway" style="display: block;">
                     <p class="mb-2">Cổng thanh toán:</p>
                     <div class="d-flex justify-content-center mb-3">

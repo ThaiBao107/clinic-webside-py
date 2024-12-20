@@ -1,5 +1,6 @@
 # def search_info_user(user):
 #from click.decorators import P
+from sqlalchemy import Nullable
 
 # file chứa các hàm xử lý gọi sử lý thêm xóa sửa, kiểm tra v..v
 # from tokenize import u
@@ -93,8 +94,22 @@ def get_payment(medical_id=None):
     return query
 
 
-# def get_Payment(payment_id=None):
 
+def get_Payment2(medical_id=None):
+    query = db.session.query(MedicalDetails, Payment) \
+        .filter(MedicalDetails.id == Payment.medicaldetail_id)
+    if query:
+        query = query.filter(MedicalDetails.id == medical_id).all()
+        print(query)
+        for p in query:
+            if p[1].trangthai.__eq__("Condition.UNPAID"):
+                print(p[1].id)
+                return p[1].id
+    return None
+
+
+def get_only_payment(payment_id = None):
+    return Payment.query.filter(Payment.id == payment_id).first()
 
 
 
@@ -111,6 +126,17 @@ def add_payment(date, sum, nurse_id, medical_id, idGiaoDich, loai):
         p = OfflinePayment(sum = sum, nurse_id =nurse_id, medicaldetail_id = medical_id, trangthai = Condition.PAID)
 
     else:
-        p = OnlinePayment(sum = sum, nurse_id =nurse_id, medicaldetail_id = medical_id, paymentType = PaymentGateway.VNPAY)
+        p = OnlinePayment(sum = sum, nurse_id =nurse_id, medicaldetail_id = medical_id, paymentType = PaymentGateway.VNPAY, trangthai = Condition.UNPAID)
 
     return p
+
+def payment_total(medical_id=None):
+    total = 0
+    query = Payment.query.filter(Payment.medicaldetail_id == medical_id).all()
+    print(query)
+    if query:
+        for p in query:
+            if p.trangthai.__eq__("Condition.PAID"):
+                total += int(p.sum)
+
+    return total
