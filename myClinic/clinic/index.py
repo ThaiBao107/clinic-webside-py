@@ -219,7 +219,8 @@ def payment():
 
         print(total_payment)
         total_medical = dao.get_medicaldetails(medical_id)
-        if dao.get_medicaldetails(medical_id) and (int(total_medical.total) - total_payment > 0):
+        tiendu = int(utils.total(medical_id)) - total_payment
+        if dao.get_medicaldetails(medical_id) and (tiendu > 0):
             drug_list = None
             m = dao.get_medicaldetails(medical_id)
 
@@ -232,13 +233,14 @@ def payment():
                 print(medical_id)
                 print(info)
                 print(drug_list)
-                total = utils.total(m.id)
-
-            if m and info:
-                if u.user_role.value == 'patient':
-                    user_doctor = dao.get_user(info[1].id)
-                    return render_template('payment/payment.html', user=u, info=info, drug_list=drug_list,
-                                           doctor=user_doctor, total=total)
+                user_doctor = None
+                if m and info and drug_list:
+                    if u.user_role.value == 'patient':
+                        user_doctor = dao.get_user(info[1].id)
+                else:
+                    mes = "Khong tim thay thong tin"
+                return render_template('payment/payment.html', user=u, info=info, drug_list=drug_list,
+                                           doctor=user_doctor,tiendu = tiendu, mes = mes)
         else:
                 mes = "Khong tim thay thong tin"
     return render_template('payment/payment.html', mes=mes)
@@ -270,8 +272,13 @@ def payment_return():
             print(p)
             if p:
                 p.trangthai = "Condition.PAID"
-                p.idGiaoDich = transtraction_id
                 db.session.commit()
+                p.idGiaoDich = transtraction_id
+                # p.idGiaoDich = str(transtraction_id)
+                print("p.idGiaoDich")
+
+                db.session.commit()
+                print(p.idGiaoDich)
             print("Thanh toán thành công!")
             return redirect('/return_API')
 
@@ -302,7 +309,7 @@ def create_bill():
         info = dao.get_info(id)
         # print(info)
         if type == "radio_offline":
-            tientra_off = utils.total(info[2].id)
+            tientra_off = utils.total(info[0].id)
             print(tientra_off)
 
         p = None
@@ -323,48 +330,66 @@ def create_bill():
 
 @app.route('/paymentlist', methods=['GET', 'POST'])
 def paymentlist():
-    mess = None
+    mess = ""
     id = current_user.id
     info = dao.get_info(id)
     print("paymentlist")
     print(info)
-    if info :
-        payment = dao.get_payment(medical_id=info[0].id)
-        list = []
+    payment = dao.get_payment(medical_id=info[0].id)
+    print(payment)
+    list = []
+    if payment:
         for p in payment:
             if p[1].trangthai.__eq__("Condition.UNPAID"):
                 list.append(p)
-        return render_template('payment/paymentlist.html', payment = list)
+        print(list)
+        if len(list) == 0:
+            list = None
+            mess = "Chưa có hóa đơn"
     else:
-        mess = "Chua co hoa don"
+        list = None
+        mess = "Không có thông tin"
+    return render_template('payment/paymentlist.html', payment = list, mess=mess)
 
-    return render_template('payment/paymentlist.html', mess)
 
 
 @app.route('/info_payment', methods=['GET', 'POST'])
 def info_payment():
     print("info payment")
-    id = current_user.id
-    info = dao.get_info(id)
-    print(info[0].id)
-    drug_list = dao.get_drugDetail(info[0].id)
-    total = utils.total(info[0].id)
-    print(1)
-    print(drug_list)
-    print(info)
-    return render_template('payment/info.html',total = total, info=info, drug_list = drug_list)
+    if request.method.__eq__('POST'):
+        print("Da do")
+        payment_id = request.form.get("payment_id")
+        print(payment_id)
+        id = current_user.id
+        info = dao.get_info(id)
+        print(info[0].id)
+        drug_list = dao.get_drugDetail(info[0].id)
+        p = dao.get_only_payment(payment_id)
+        print(1)
+        print(drug_list)
+        print(info)
+        return render_template('payment/info.html', info=info, drug_list = drug_list, tiendu = p.sum)
 
 
 
 
 @app.route('/api/process_vnpay', methods=['POST'])
 def process_vnpay():
+    total = None
+
+    if request.method.__eq__('POST'):
+        print("Do")
+        data = request.get_json()
+        total = data.get('total')
     print("process VN")
     patient_id = current_user.id
     info = dao.get_info(patient_id)
     # print(patient_id)
     # print(medicaldetails.id)
-    total = utils.total(patient_id)
+    print(info)
+    print("VNPAY")
+    print(total)
+
     if request.method == 'POST':
         # Process input data from form
         order_type = "billpayment"
@@ -383,7 +408,7 @@ def process_vnpay():
         ipaddr = request.remote_addr
         # Build URL Payment
         vnp = VNpay()
-        vnp.requestData['vnp_Amount'] = int(utils.total(patient_id)) * 100
+        vnp.requestData['vnp_Amount'] = int(total) * 100
         vnp.requestData['vnp_CurrCode'] = 'VND'
         print("Medical process ")
         print("medical details:")

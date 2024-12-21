@@ -51,13 +51,52 @@ def get_user(user_id):
 def get_medicaldetails(medical_id = None):
     return MedicalDetails.query.filter(MedicalDetails.id == medical_id).first()
 
+
+#Moi sua
 def get_info(user_id = None):
     query = db.session.query(MedicalDetails, Doctor, User)\
     .filter(User.id == MedicalDetails.patient_id) \
     .filter(MedicalDetails.doctor_id == Doctor.id)
 
     if query:
-        query = query.filter(User.id == user_id).first()
+        query = query.filter(User.id == user_id).all()
+        print(query)
+        for k in query:
+            total_paid = payment_total(medical_id=k[0].id)
+            print("total")
+            print(total_paid)
+            m= MedicalDetails.query.get(k[0].id)
+            total_medical = utils.total(medical_id=k[0].id)
+            print(total_medical)
+            if total_medical - total_paid <= 0:
+                continue
+            else:
+                query = k
+                break
+
+        print("All phieu kham benh")
+        print(query)
+
+
+    return query
+
+def payment_total(medical_id=None):
+    total = 0
+    query = Payment.query.filter(Payment.medicaldetail_id == medical_id).all()
+    print(query)
+    if query:
+        for p in query:
+            if p.trangthai.__eq__("Condition.PAID"):
+                total += int(p.sum)
+
+    return total
+
+def get_payment(medical_id=None):
+    query = db.session.query(MedicalDetails, Payment)\
+    .filter(MedicalDetails.id == Payment.medicaldetail_id)
+
+    if query:
+       query = query.filter(MedicalDetails.id == medical_id).all()
 
     return query
 
@@ -84,14 +123,7 @@ def get_pay(medical_id =None):
     return query.all()
 
 
-def get_payment(medical_id=None):
-    query = db.session.query(MedicalDetails, Payment)\
-    .filter(MedicalDetails.id == Payment.medicaldetail_id)
 
-    if query:
-       query = query.filter(MedicalDetails.id == medical_id).all()
-
-    return query
 
 
 
@@ -130,13 +162,4 @@ def add_payment(date, sum, nurse_id, medical_id, idGiaoDich, loai):
 
     return p
 
-def payment_total(medical_id=None):
-    total = 0
-    query = Payment.query.filter(Payment.medicaldetail_id == medical_id).all()
-    print(query)
-    if query:
-        for p in query:
-            if p.trangthai.__eq__("Condition.PAID"):
-                total += int(p.sum)
 
-    return total

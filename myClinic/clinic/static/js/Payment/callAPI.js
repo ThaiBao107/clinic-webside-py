@@ -1,12 +1,17 @@
 function callPaymentAPI() {
     // alert("Online payment")
     // Gọi API
+    var total = document.getElementById("total")
+     // Lấy phần tử <p id="total">
+    var totalValue = total.textContent;
+    var data = {total:totalValue}
+    alert(totalValue)
     fetch('/api/process_vnpay', {
         method: 'POST', // POST vì có dữ liệu gửi lên
-        // headers: {
-        //     'Content-Type': 'application/json',
-        // },
-        // body: JSON.stringify(), // Chuyển dữ liệu thành JSON
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data), // Chuyển dữ liệu thành JSON
     })
         .then(response => {
             if (response.ok) {

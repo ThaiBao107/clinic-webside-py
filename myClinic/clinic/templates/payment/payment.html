@@ -11,7 +11,7 @@
     {% if mes %}
         <div class="alert alert-danger mt-2"> {{ mes }}</div>
     {% endif %}
-    {% if user and info %}
+    {% if user and info and drug_list%}
         <form action="/">
             <h2 style="text-align: center">Thanh toán hóa đơn</h2>
             <div class="container1">
@@ -97,9 +97,8 @@
                             </tr>
                             </tbody>
                         </table>
-
                         <div class="alert alert-success ">
-                            <p id="total">{{ total }} </p>
+                            <p id="total">{{ tiendu }} </p>
                         </div>
                         </div>
                         </div>
