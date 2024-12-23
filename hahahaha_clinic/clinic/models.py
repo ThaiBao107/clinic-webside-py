@@ -1,5 +1,5 @@
 from enum import Enum as UserEnum
-from enum import Enum as PaymentOnline
+from enum import Enum as PaymentMethod
 from sqlalchemy import DateTime, Enum, Column, Integer, String, Float, Boolean, ForeignKey, Date, func, Time, Double
 from sqlalchemy.orm import relationship
 from clinic import app, db, utils
@@ -18,7 +18,11 @@ class Gender(UserEnum):
     MALE = 'male'
     FEMALE = 'female'
 
-class PaymentType(PaymentOnline):
+class PaymentType(PaymentMethod):
+    OFFLINE = 'offline'
+    ONLINE = 'online'
+
+class PaymentGateway(PaymentMethod):
     MOMO = 'momo'
     VNPAY = 'vnpay'
 
@@ -91,6 +95,7 @@ class Payment(db.Model):
     sum = Column(String(20), nullable=False)
     nurse_id = Column(Integer, ForeignKey('Nurse.id'), nullable=False)
     medicalDetail_id = Column(Integer, ForeignKey('MedicalDetails.id'), nullable=False)
+    trangthai = Column(String(20), nullable=True) #thêm
 
 class MedicalDetails(BaseModel):
     __tablename__ = 'MedicalDetails'
@@ -105,8 +110,8 @@ class MedicalDetails(BaseModel):
 
 class OnlinePayment(Payment):
     id = Column(Integer, ForeignKey('Payment.id'), nullable=False, primary_key=True)
-    paymentType = Column(Enum(PaymentType), nullable=False)
-    idGiaoDich = Column(String(50), nullable=False)
+    paymentType = Column(Enum(PaymentGateway), nullable=False)
+    idGiaoDich = Column(String(50), nullable=False, unique=True)
 
 
 class OfflinePayment(Payment):
