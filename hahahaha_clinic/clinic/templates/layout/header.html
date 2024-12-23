@@ -34,7 +34,7 @@
                 <a class="nav-link" href="{{ url_for('register_appointment') }}">Đăng ký lịch khám</a>
             </li>
 
-<!--            Đăng nhập với tư cách y tá-->
+<!--            Đăng nhập với tư cách y tá -->
             {% elif current_user.user_role.value == 'nurse' %}
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('search_patient') }}">Đăng ký lịch khám </a>
@@ -42,6 +42,14 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('list_appointment') }}">Danh sách khám</a>
             </li>
+
+<!--            đăng nhập với tư cách bác sĩ -->
+            {% elif current_user.user_role.value == 'doctor' %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('medical_details') }}">Tạo phiếu khám bệnh</a>
+            </li>
+
+
 <!--đăng nhập với tư cách ??????? -->
 
             {% endif %}

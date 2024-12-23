@@ -1,6 +1,10 @@
 # file chứa các hàm xử lý gọi sử lý thêm xóa sửa, kiểm tra v..v
+from pyexpat.errors import messages
+
 from clinic import app, db, utils, MAX_PATIENT
-from clinic.models import User, UserRole, Patient, Appointment, AppointmentList
+from clinic.models import User, UserRole, Patient, Appointment, AppointmentList, MedicalDetails,Drug, Unit,Type, CategoriesDrug
+from flask import render_template, request, url_for, redirect, flash, jsonify, session, make_response
+from flask_login import login_user, logout_user, login_required, current_user
 
 
 def add_user(name, username, password, **kwargs):
@@ -61,7 +65,68 @@ def add_appointment(**kwargs):
     db.session.add(appoint)
     db.session.commit()
 
+def get_patient_appointment(patient_id):
+
+    patient = (
+        db.session.query(User, Appointment)
+        .join(Appointment, Appointment.patient_id == User.id)
+        .filter(User.id == patient_id)
+        .first()
+    )
+    return patient
+
+def load_unit():
+    return Unit.query.all()
+
+def load_type():
+    return Type.query.all()
 
 
+def load_drugs(**kwargs):
+        drugs = Drug.query
+        name = kwargs.get('name')
+        unit = kwargs.get('unit')
+        type = kwargs.get('type')
+
+        if name:
+            drugs = drugs.filter(Drug.name.contains(name))
+        if unit:
+            drugs = drugs.filter_by(drugUnit=unit)
+        if type:
+            drugs = drugs.filter_by(drugType=type)
 
 
+def get_drug_by_id(drug_id):
+    return Drug.query.get(drug_id)
+
+def get_unit_by_id(unit_id):
+    return Unit.query.get(unit_id)
+
+def get_drug_by_name(drug_name=None):
+    if not drug_name:
+        return None  # Nếu không có tên thuốc, trả về None
+
+    # Truy vấn thuốc theo tên
+    drug = Drug.query.filter(Drug.name == drug_name).first()
+
+    # Kiểm tra nếu tìm thấy thuốc
+    if drug:
+        return drug  # Trả về đối tượng thuốc
+    else:
+        return None
+
+def get_type_by_drug_id(drug_id):
+    # Join bảng Drug với Type để lấy thông tin Type
+    drug_type = db.session.query(Type)\
+        .join(Drug, Drug.drugType == Type.id)\
+        .filter(Drug.id == drug_id)\
+        .first()
+    return drug_type
+
+def get_unit_by_drug_id(drug_id):
+    # Join bảng Drug với Unit để lấy thông tin Unit
+    drug_unit = db.session.query(Unit)\
+        .join(Drug, Drug.drugUnit == Unit.id)\
+        .filter(Drug.id == drug_id)\
+        .first()
+    return drug_unit

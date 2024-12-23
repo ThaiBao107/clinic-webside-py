@@ -1,9 +1,13 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from http import HTTPStatus
+
+from sqlalchemy.sql.functions import now
+
 from clinic import app, login, mail, dao, utils
 from flask_login import login_user, logout_user, login_required
 from flask import render_template, request, url_for, redirect, flash, jsonify, session, make_response
 import cloudinary.uploader
-from clinic.models import Gender, Patient, Appointment, AppointmentList, Status, Doctor
+from clinic.models import Gender, Patient, Appointment, AppointmentList, Status, Doctor, MedicalDetails
 from clinic.forms import ResetPasswordForm, ChangePasswordForm
 from flask_mail import Message
 import openpyxl
@@ -340,8 +344,70 @@ def confirm_appointment(schedule_date):
 #     return jsonify({"message": "Đã gửi email thành công!"}), 200
 # ------------------
 
+@app.route('/medical_details', methods=['GET', 'POST'])
+@login_required
 
+def medical_details():
+    patient_info=None
+    units = dao.load_unit()
+    types = dao.load_type()
+    drug_name=None
+    drug=None
+    patient_schedule_datetime=None
+    current_time = datetime.now() + timedelta(minutes=15)
 
+    # lấy thông tin bênh nhân từ csdl -> form (thông qua partient_id)
+    if request.method.__eq__('POST'):
+        patient_id = request.form.get('patient_id', "").strip()
+        if not patient_id:
+            flash('Patient ID is required', 'error')
+            return redirect(url_for('medical_details'))
+
+        # lay ten benh nhan
+        patient_info = dao.get_patient_appointment(patient_id).User
+        patient_appoint=dao.get_patient_appointment(patient_id).Appointment
+        print(f"Loaded Patient Name: {patient_info.name}")
+
+        # Lấy thông tin cuộc hẹn của bệnh nhân
+        patient_schedule_datetime = datetime.strptime(
+            f"{patient_appoint.schedule_date} {patient_appoint.schedule_time}",
+            "%Y-%m-%d %H:%M:%S"
+        )
+
+        print(f"thời gian hiện tại {current_time }")
+        print(f"thời gian đăng kí { patient_schedule_datetime }")
+
+            #Kiểm tra bệnh nhân đủ điều kiện khám bệnh. Trễ 15p so với thời gian đã đặt liịch.
+            # if patient_schedule_datetime <= current_time or patient_info.Appointment.status != Status.PENDING:
+            #     flash("Bệnh nhân hiện tại chưa có lich khám bệnh", category='error')
+            #     return render_template('medical_details/add_medical_details.html')
+
+        drug_name=request.form.get("drug_name","").strip()
+        if not drug_name:
+            flash(f"Chua tim thay ten thuoc {drug_name}",category="error")
+            return render_template("medical_details/add_medical_details.html")
+        drug_id=dao.get_drug_by_name(drug_name)
+        utils= request.form.get("utils")
+        quitity=request.form.get("quitity")
+        types=request.form.get("types")
+
+        drug_detail={
+            'id': drug_id,
+            'name':drug_name,
+            'unit':units,
+            'type':types,
+            'quality':quitity,
+        }
+
+        print(f"drug_detail: {drug_detail}")
+
+    return render_template('medical_details/add_medical_details.html', patient_info=patient_info,
+                           patient_schedule_datetime=patient_schedule_datetime, drug=drug, units=units, types=types)
+
+@app.route('/medical_details', methods=['POST'])
+@login_required
+def add_medical_details():
+    pass
 
 @app.route('/api/send-mail-appointment/<schedule_date>', methods=['POST'])
 def send_mail_appointment(schedule_date):

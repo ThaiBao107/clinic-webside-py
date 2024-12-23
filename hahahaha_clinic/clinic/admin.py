@@ -1,14 +1,21 @@
-from flask import redirect
+import math
+
+from flask import redirect, request, url_for
 from flask_admin.contrib.sqla import ModelView
 from clinic import app, db, utils
 from flask_admin import Admin, BaseView, expose
-from clinic.models import User, UserRole, Doctor, Nurse, Patient
+from clinic.models import User, UserRole, Doctor, Nurse, Patient, Type, Unit, Drug
 from flask_login import current_user, logout_user
+from clinic import dao
 
-admin = Admin(app=app, name="Private Clinic", template_mode='bootstrap4')
+admin = Admin(app=app, name="SaiGon Care", template_mode='bootstrap4')
 
 
 class AdminView(ModelView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.user_role == UserRole.ADMIN
+
+class AdminBaseView(BaseView):
     def is_accessible(self):
         return current_user.is_authenticated and current_user.user_role == UserRole.ADMIN
 
@@ -19,6 +26,9 @@ class MyUserView(AdminView):
     column_editable_list = ['name', ]
     can_export = True
     column_filters = ['user_role']
+    # Thêm phân trang
+    page_size = 4
+    can_set_page_size = True
     column_labels = {
         'id': 'ID',
         'name': 'Họ Tên',
@@ -87,6 +97,7 @@ class MyUserView(AdminView):
             return False
 
 
+
 class AuthenticatedView(BaseView):
     def is_accessible(self):
         return current_user.is_authenticated
@@ -98,6 +109,109 @@ class LogoutView(AuthenticatedView):
         logout_user()
         return redirect('/admin')
 
+class DrugType(AdminView):
+    column_list = ['id', 'name', 'create_date', 'update_date']
+    column_searchable_list = ['id', 'name']
+    column_editable_list = ['name']
+    column_filters = ['name']
+    page_size = 4
+    can_set_page_size = True
+    # Loại trừ các trường không được chỉnh sửa
+    form_excluded_columns = ['create_date', 'update_date']
+    column_labels = {
+        'id': 'ID',
+        'name': 'Tên loại thuốc',
+        'create_date' : 'Ngày tạo',
+        'update_date': 'Ngày cập nhập'
+    }
+
+class DrugUnit(AdminView):
+        column_list = ['id', 'name', 'create_date', 'update_date']
+        column_searchable_list = ['id', 'name']
+        column_editable_list = ['name']
+        column_filters = ['name']
+        page_size = 4
+        can_set_page_size = True
+        # Loại trừ các trường không được chỉnh sửa
+        form_excluded_columns = ['create_date', 'update_date']
+        column_labels = {
+            'id': 'ID',
+            'name': 'Tên đơn vị',
+            'create_date': 'Ngày tạo',
+            'update_date': 'Ngày cập nhập'
+        }
+
+class DrugManagement(AdminBaseView):
+    @expose('/')
+    def index(self):
+        name = request.args.get('name')
+        unit = request.args.get('unit')
+        type = request.args.get('type')
+        page = request.args.get('page',1)
+        counter = dao.count_drugs()
+        drugs = dao.load_drugs(
+            name=name,
+            unit=unit,
+            type=type,
+            page=int(page)
+        )
+
+        return self.render('admin/drug_management.html',
+                           drugs=drugs,
+                           drugTypes=Type.query.all(),
+                           drugUnits=Unit.query.all(),
+                           page=math.ceil(counter / app.config['PAGE_SIZE'])
+                           )
+
+        # Thêm mới thuốc
+
+    @expose('/add', methods=['GET', 'POST'])
+    def add_drug(self):
+        if request.method == 'POST':
+            name = request.form['name']
+            drug_type = request.form['drugType']
+            drug_unit = request.form['drugUnit']
+            price = request.form['price']
+            quantity = request.form['quantity']
+
+            new_drug = Drug(name=name, drugType=drug_type, drugUnit=drug_unit, price=price, quantity=quantity)
+            db.session.add(new_drug)
+            db.session.commit()
+            return redirect(url_for('drugmanagement.index'))
+
+        drug_types = Type.query.all()
+        drug_units = Unit.query.all()
+        return self.render('admin/add_drug.html', drugTypes=drug_types, drugUnits=drug_units)
+
+    @expose('/delete/<int:drug_id>', methods=['POST'])
+    def delete_drug(self, drug_id):
+        drug = Drug.query.get_or_404(drug_id)
+        db.session.delete(drug)
+        db.session.commit()
+        return redirect(url_for('drugmanagement.index'))
+
+    @expose('/edit/<int:drug_id>', methods=['GET', 'POST'])
+    def edit_drug(self, drug_id):
+        drug = Drug.query.filter_by(id=drug_id).first()
+        if request.method == 'POST':
+            drug.name = request.form['name']
+            drug.drugType = request.form['drugType']
+            drug.drugUnit = request.form['drugUnit']
+            drug.price = request.form['price']
+            drug.quantity = request.form['quantity']
+            db.session.commit()
+            return redirect(url_for('drugmanagement.index'))
+
+        drug_types = Type.query.all()
+        drug_units = Unit.query.all()
+        return self.render('admin/edit_drug.html', drug=drug, drugTypes=drug_types, drugUnits=drug_units)
+
+
+
+
 
 admin.add_view(MyUserView(User, db.session))
+admin.add_view(DrugManagement(name='Quản Lý Thuốc'))
+admin.add_view(DrugType(Type, db.session, name='Loại Thuốc'))
+admin.add_view(DrugUnit(Unit, db.session, name='Đơn vị'))
 admin.add_view(LogoutView(name='Đăng xuất'))
