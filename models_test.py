@@ -176,208 +176,236 @@ class DrugDetail(BaseModel):
     medicalDetails = Column(Integer, ForeignKey('MedicalDetails.id') , nullable=False)
     drug = Column(Integer,ForeignKey('Drug.id'), nullable=False)
     quatity = Column( Integer, nullable=False)
+    description = Column(String(255),nullable=False)
 
 
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
+        # db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
+        # db.session.commit()
+        #
+        # # #Existing admin, patient, nurse entries
+        # admin1 = User(
+        #     name='admin1',
+        #     username='admin1',
+        #     password=str(utils.hash_password("123")),  # Mật khẩu được băm
+        #     avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
+        #     email='2251010077phuong@ou.edu.vn',
+        #     user_role=UserRole.ADMIN,
+        #     gender=Gender.FEMALE,
+        #     phone='0123456',
+        #     dob=date(2004, 7, 23)
+        # )
+        # db.session.add(admin1)
+        # db.session.commit()
+        # admin_entry = Admin(id=admin1.id)
+        # db.session.add(admin_entry)
+        #
+        # patient1 = User(
+        #     name='patient1',
+        #     username='patient1',
+        #     password=str(utils.hash_password("123")),  # Mật khẩu được băm
+        #     avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
+        #     email='2251010062mai@ou.edu.vn',
+        #     user_role=UserRole.PATIENT,
+        #     gender=Gender.MALE,
+        #     phone='0962395651',
+        #     dob=date(2004, 3, 10)
+        # )
+        # db.session.add(patient1)
+        # db.session.commit()
+        # patient_entry1 = Patient(id=patient1.id)
+        # db.session.add(patient_entry1)
+        #
+        # patient2 = User(
+        #     name='patient2',
+        #     username='patient2',
+        #     password=str(utils.hash_password("123")), # Mật khẩu được băm
+        #     avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
+        #     email='nglhongphuong@gmail.com',
+        #     user_role=UserRole.PATIENT,
+        #     gender=Gender.FEMALE,
+        #     phone='0708504288',
+        #     dob=date(2004, 7, 23)
+        # )
+        # db.session.add(patient2)
+        # db.session.commit()
+        # patient_entry2 = Patient(id=patient2.id)
+        # db.session.add(patient_entry2)
+        #
+        # patient3 = User(
+        #     name='patient3',
+        #     username='patient3',
+        #     password=str(utils.hash_password("123")), # Mật khẩu được băm
+        #     avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
+        #     email='2251010006bao@ou.edu.vn',
+        #     user_role=UserRole.PATIENT,
+        #     gender=Gender.MALE,
+        #     phone='0944180364',
+        #     dob=date(2004, 3, 10)
+        # )
+        # db.session.add(patient3)
+        # db.session.commit()
+        # patient_entry3 = Patient(id=patient3.id)
+        # db.session.add(patient_entry3)
+        #
+        # nurse1 = User(
+        #     name='nurse1',
+        #     username='nurse1',
+        #     password=str(utils.hash_password("123")),  # Mật khẩu được băm
+        #     avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
+        #     email='nguyenluhongphuong@gmail.com',
+        #     user_role=UserRole.NURSE,
+        #     gender=Gender.FEMALE,
+        #     phone='0703792690',
+        #     dob=date(2004, 3, 10)
+        # )
+        # db.session.add(nurse1)
+        # db.session.commit()
+        # nurse_entry1 = Nurse(id=nurse1.id)
+        # db.session.add(nurse_entry1)
+        # db.session.commit()
+        #
+        # nurse2 = User(
+        #     name='y ta 2',
+        #     username='nurse2',
+        #     password=str(utils.hash_password("123")),  # Mật khẩu được băm
+        #     avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
+        #     email='hhhhh@gmail.com',
+        #     user_role=UserRole.NURSE,
+        #     gender=Gender.FEMALE,
+        #     phone='123455567788',
+        #     dob=date(2004, 3, 10)
+        # )
+        # db.session.add(nurse2)
+        # db.session.commit()
+        # nurse_entry1 = Nurse(id=nurse2.id)
+        # db.session.add(nurse_entry1)
+        # db.session.commit()
+        #
+        # # Create appointment lists
+        # appointment_list1 = AppointmentList(schedule_date=date(2024, 12, 5), nurse_id=nurse1.id)
+        # appointment_list2 = AppointmentList(schedule_date=date(2024, 12, 6), nurse_id=nurse2.id)
+        # db.session.add(appointment_list1)
+        # db.session.add(appointment_list2)
+        # db.session.commit()
+        #
+        # # Add appointments to the lists
+        # appointment1 = Appointment(
+        #     description="Tái khám",
+        #     schedule_date=date(2024, 12, 5),
+        #     schedule_time=datetime.strptime("08:00", "%H:%M").time(),
+        #     patient_id=patient1.id,
+        #     appointment_list_id=appointment_list1.id
+        # )
+        # appointment2 = Appointment(
+        #     description="Đau răng",
+        #     schedule_date=date(2024, 12, 5),
+        #     schedule_time=datetime.strptime("09:00", "%H:%M").time(),
+        #     patient_id=patient2.id,
+        #     appointment_list_id=appointment_list1.id
+        # )
+        # appointment3 = Appointment(
+        #     description="Bị sốt 3 ngày, khó tiêu có triệu chứng ói khuya",
+        #     schedule_date=date(2024, 12, 6),
+        #     schedule_time=datetime.strptime("10:00", "%H:%M").time(),
+        #     patient_id=patient1.id,
+        #     appointment_list_id=appointment_list2.id
+        # )
+        # appointment4 = Appointment(
+        #     description="Tái khám",
+        #     schedule_date=date(2024, 12, 6),
+        #     schedule_time=datetime.strptime("11:00", "%H:%M").time(),
+        #     patient_id=patient2.id,
+        #     appointment_list_id=appointment_list2.id
+        # )
+        #
+        # db.session.add(appointment1)
+        # db.session.add(appointment2)
+        # db.session.add(appointment3)
+        # db.session.add(appointment4)
+        # db.session.commit()
+        #
+        # n3 = User(name='Ha Vi', username='nurse3', password=str(utils.hash_password('1234')), phone="01234567",
+        #           gender=Gender.FEMALE,
+        #           address='123 HVC, TPHCM', user_role=UserRole.NURSE, email="2251093n1@gmail.com",
+        #           dob=date(2004, 12, 7))
+        # n4 = User(name='Thi Huong', username='nurse4', password=str(utils.hash_password('1234')), phone="01234423567",
+        #           gender=Gender.FEMALE,
+        #           address='12 PVD, TPHCM', user_role=UserRole.NURSE, email="2251093n2@gmail.com",
+        #           dob=date(2004, 12, 7))
+        # n5 = User(name='Minh Tuyet', username='nurse5', password=str(utils.hash_password('1234')),
+        #           phone="012756734567",
+        #           gender=Gender.FEMALE,
+        #           address='13 NT, TPHCM', user_role=UserRole.NURSE, email="2251093n3@gmail.com",
+        #           dob=date(2004, 12, 7))
+        # n6 = User(name='Thanh Tung', username='nurse6', password=str(utils.hash_password('1234')),
+        #           phone="01234509767",
+        #           gender=Gender.MALE,
+        #           address='3 ADL, TPHCM', user_role=UserRole.NURSE, email="2251093n4@gmail.com",
+        #           dob=date(2004, 12, 7))
+        #
+        # db.session.add_all([n3, n4, n5, n6])
+        # db.session.commit()
+        # nurse3 = Nurse(id = n3.id)
+        # nurse4 = Nurse(id = n4.id)
+        # nurse5 = Nurse(id = n5.id)
+        # nurse6 = Nurse(id = n6.id)
+        #
+        # db.session.add(nurse3)
+        # db.session.add(nurse4)
+        # db.session.add(nurse5)
+        # db.session.add(nurse6)
+        # db.session.commit()
+        #
+        # d1 = User(name='Thanh Hien', username='doctor1', password=str(utils.hash_password('1234')),
+        #           phone="0123509767",
+        #           gender=Gender.FEMALE,
+        #           address='3 PH, TPHCM', user_role=UserRole.DOCTOR, email="225109d1@gmail.com",
+        #           dob=date(2004, 1, 7))
+        # db.session.add(d1)
+        # db.session.commit()
+        # doctor1 = Doctor(id = d1.id, specialization = "Nội soi",degree = "Chuyên khoa I", experience = "6")
+        # db.session.add(doctor1)
+        # db.session.commit()
+        #
+        # # them thuốc
+        # u1 = Unit(name = "vỉ")
+        # u2 = Unit(name = "viên")
+        # u3 = Unit(name = "chai")
+        # t1 = Type(name = 'Vitamin')
+        # t2 = Type(name = "Kháng Sinh")
+        # t3 = Type(name = "Giảm đau")
+        # db.session.add_all([u1,u2,u3,t1,t2,t3])
+        # db.session.commit()
+        # drug1 = Drug(name="paradol", drugUnit=u1.id, drugType=u2.id, price=200, quantity=100)
+        # db.session.add(drug1)
+        # db.session.commit()
+        #
+        # drug1 = Drug(name="Paradol", price=2000, drugType=t3.id, drugUnit=u1.id, quantity=500)
+        # drug2 = Drug(name="Cefixime", price=3000, drugType=t2.id, drugUnit=u1.id, quantity=300)
+        # drug3 = Drug(name="Vitamin C", price=1000, drugType=t1.id, drugUnit=u2.id, quantity=100)
+        #
+        # db.session.add_all([drug1, drug2, drug3])
+        # db.session.commit()
+
+
+        medical1 = MedicalDetails(diagnose="Sốt", symptoms="Ho, sốt cao", doctor_id=11, patient_id=3, total=300000)
+        medical2 = MedicalDetails(diagnose="Viêm họng", symptoms="Đau họng, khó nuốt", doctor_id=11, patient_id=4,
+                                  total=150000)
+        medical3 = MedicalDetails(diagnose="Mệt mỏi", symptoms="Đau nhức cơ thể", doctor_id=11, patient_id=2,
+                                  total=200000)
+
+        db.session.add_all([medical1, medical2, medical3])
         db.session.commit()
-    #
-    #     # #Existing admin, patient, nurse entries
-    #     admin1 = User(
-    #         name='admin1',
-    #         username='admin1',
-    #         password=str(utils.hash_password("123")),  # Mật khẩu được băm
-    #         avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
-    #         email='2251010077phuong@ou.edu.vn',
-    #         user_role=UserRole.ADMIN,
-    #         gender=Gender.FEMALE,
-    #         phone='0123456',
-    #         dob=date(2004, 7, 23)
-    #     )
-    #     db.session.add(admin1)
-    #     db.session.commit()
-    #     admin_entry = Admin(id=admin1.id)
-    #     db.session.add(admin_entry)
-    #
-    #     patient1 = User(
-    #         name='patient1',
-    #         username='patient1',
-    #         password=str(utils.hash_password("123")),  # Mật khẩu được băm
-    #         avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
-    #         email='2251010062mai@ou.edu.vn',
-    #         user_role=UserRole.PATIENT,
-    #         gender=Gender.MALE,
-    #         phone='0962395651',
-    #         dob=date(2004, 3, 10)
-    #     )
-    #     db.session.add(patient1)
-    #     db.session.commit()
-    #     patient_entry1 = Patient(id=patient1.id)
-    #     db.session.add(patient_entry1)
-    #
-    #     patient2 = User(
-    #         name='patient2',
-    #         username='patient2',
-    #         password=str(utils.hash_password("123")), # Mật khẩu được băm
-    #         avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
-    #         email='nglhongphuong@gmail.com',
-    #         user_role=UserRole.PATIENT,
-    #         gender=Gender.FEMALE,
-    #         phone='0708504288',
-    #         dob=date(2004, 7, 23)
-    #     )
-    #     db.session.add(patient2)
-    #     db.session.commit()
-    #     patient_entry2 = Patient(id=patient2.id)
-    #     db.session.add(patient_entry2)
-    #
-    #     patient3 = User(
-    #         name='patient3',
-    #         username='patient3',
-    #         password=str(utils.hash_password("123")), # Mật khẩu được băm
-    #         avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
-    #         email='2251010006bao@ou.edu.vn',
-    #         user_role=UserRole.PATIENT,
-    #         gender=Gender.MALE,
-    #         phone='0944180364',
-    #         dob=date(2004, 3, 10)
-    #     )
-    #     db.session.add(patient3)
-    #     db.session.commit()
-    #     patient_entry3 = Patient(id=patient3.id)
-    #     db.session.add(patient_entry3)
-    #
-    #     nurse1 = User(
-    #         name='nurse1',
-    #         username='nurse1',
-    #         password=str(utils.hash_password("123")),  # Mật khẩu được băm
-    #         avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
-    #         email='nguyenluhongphuong@gmail.com',
-    #         user_role=UserRole.NURSE,
-    #         gender=Gender.FEMALE,
-    #         phone='0703792690',
-    #         dob=date(2004, 3, 10)
-    #     )
-    #     db.session.add(nurse1)
-    #     db.session.commit()
-    #     nurse_entry1 = Nurse(id=nurse1.id)
-    #     db.session.add(nurse_entry1)
-    #     db.session.commit()
-    #
-    #     nurse2 = User(
-    #         name='y ta 2',
-    #         username='nurse2',
-    #         password=str(utils.hash_password("123")),  # Mật khẩu được băm
-    #         avatar='https://res.cloudinary.com/dmz9kuzue/image/upload/v1732014605/samples/dessert-on-a-plate.jpg',
-    #         email='hhhhh@gmail.com',
-    #         user_role=UserRole.NURSE,
-    #         gender=Gender.FEMALE,
-    #         phone='123455567788',
-    #         dob=date(2004, 3, 10)
-    #     )
-    #     db.session.add(nurse2)
-    #     db.session.commit()
-    #     nurse_entry1 = Nurse(id=nurse2.id)
-    #     db.session.add(nurse_entry1)
-    #     db.session.commit()
-    #
-    #     # Create appointment lists
-    #     appointment_list1 = AppointmentList(schedule_date=date(2024, 12, 5), nurse_id=nurse1.id)
-    #     appointment_list2 = AppointmentList(schedule_date=date(2024, 12, 6), nurse_id=nurse2.id)
-    #     db.session.add(appointment_list1)
-    #     db.session.add(appointment_list2)
-    #     db.session.commit()
-    #
-    #     # Add appointments to the lists
-    #     appointment1 = Appointment(
-    #         description="Tái khám",
-    #         schedule_date=date(2024, 12, 5),
-    #         schedule_time=datetime.strptime("08:00", "%H:%M").time(),
-    #         patient_id=patient1.id,
-    #         appointment_list_id=appointment_list1.id
-    #     )
-    #     appointment2 = Appointment(
-    #         description="Đau răng",
-    #         schedule_date=date(2024, 12, 5),
-    #         schedule_time=datetime.strptime("09:00", "%H:%M").time(),
-    #         patient_id=patient2.id,
-    #         appointment_list_id=appointment_list1.id
-    #     )
-    #     appointment3 = Appointment(
-    #         description="Bị sốt 3 ngày, khó tiêu có triệu chứng ói khuya",
-    #         schedule_date=date(2024, 12, 6),
-    #         schedule_time=datetime.strptime("10:00", "%H:%M").time(),
-    #         patient_id=patient1.id,
-    #         appointment_list_id=appointment_list2.id
-    #     )
-    #     appointment4 = Appointment(
-    #         description="Tái khám",
-    #         schedule_date=date(2024, 12, 6),
-    #         schedule_time=datetime.strptime("11:00", "%H:%M").time(),
-    #         patient_id=patient2.id,
-    #         appointment_list_id=appointment_list2.id
-    #     )
-    #
-    #     db.session.add(appointment1)
-    #     db.session.add(appointment2)
-    #     db.session.add(appointment3)
-    #     db.session.add(appointment4)
-    #     db.session.commit()
-    #
-    #     n3 = User(name='Ha Vi', username='nurse3', password=str(utils.hash_password('1234')), phone="01234567",
-    #               gender=Gender.FEMALE,
-    #               address='123 HVC, TPHCM', user_role=UserRole.NURSE, email="2251093n1@gmail.com",
-    #               dob=date(2004, 12, 7))
-    #     n4 = User(name='Thi Huong', username='nurse4', password=str(utils.hash_password('1234')), phone="01234423567",
-    #               gender=Gender.FEMALE,
-    #               address='12 PVD, TPHCM', user_role=UserRole.NURSE, email="2251093n2@gmail.com",
-    #               dob=date(2004, 12, 7))
-    #     n5 = User(name='Minh Tuyet', username='nurse5', password=str(utils.hash_password('1234')),
-    #               phone="012756734567",
-    #               gender=Gender.FEMALE,
-    #               address='13 NT, TPHCM', user_role=UserRole.NURSE, email="2251093n3@gmail.com",
-    #               dob=date(2004, 12, 7))
-    #     n6 = User(name='Thanh Tung', username='nurse6', password=str(utils.hash_password('1234')),
-    #               phone="01234509767",
-    #               gender=Gender.MALE,
-    #               address='3 ADL, TPHCM', user_role=UserRole.NURSE, email="2251093n4@gmail.com",
-    #               dob=date(2004, 12, 7))
-    #
-    #     db.session.add_all([n3, n4, n5, n6])
-    #     db.session.commit()
-    #     nurse3 = Nurse(id = n3.id)
-    #     nurse4 = Nurse(id = n4.id)
-    #     nurse5 = Nurse(id = n5.id)
-    #     nurse6 = Nurse(id = n6.id)
-    #
-    #     db.session.add(nurse3)
-    #     db.session.add(nurse4)
-    #     db.session.add(nurse5)
-    #     db.session.add(nurse6)
-    #     db.session.commit()
-    #
-    #     d1 = User(name='Thanh Hien', username='doctor1', password=str(utils.hash_password('1234')),
-    #               phone="0123509767",
-    #               gender=Gender.FEMALE,
-    #               address='3 PH, TPHCM', user_role=UserRole.DOCTOR, email="225109d1@gmail.com",
-    #               dob=date(2004, 1, 7))
-    #     db.session.add(d1)
-    #     db.session.commit()
-    #     doctor1 = Doctor(id = d1.id, specialization = "Nội soi",degree = "Chuyên khoa I", experience = "6")
-    #     db.session.add(doctor1)
-    #     db.session.commit()
-    #
-        # them thuốc
-        u1 = Unit(name = "vỉ")
-        u2 = Unit(name = "viên")
-        u3 = Unit(name = "chai")
-        t1 = Type(name = 'Vitamin')
-        t2 = Type(name = "Kháng Sinh")
-        t3 = Type(name = "Giảm đau")
-        db.session.add_all([u1,u2,u3,t1,t2,t3])
+
+        detail1 = DrugDetail(medicalDetails=3, drug=1, quatity=10, description='Ăn trước khi uống')
+        detail2 = DrugDetail(medicalDetails=3, drug=1, quatity=5, description='Sáng và chiều')
+        detail3 = DrugDetail(medicalDetails=2, drug=2, quatity=20,description='Chỉ uống khi sốt trên 38 độn')
+        detail4 = DrugDetail(medicalDetails=2, drug=3, quatity=15, description='Uống khi khó tiêu')
+        detail5 = DrugDetail(medicalDetails=1, drug=4, quatity=8, description='Uống khi hạ đường huyết')
+
+        db.session.add_all([detail1, detail2, detail3, detail4, detail5])
         db.session.commit()
-        drug1 = Drug(name="paradol", drugUnit=u1.id, drugType=u2.id, price=200, quantity=100)
-        db.session.add(drug1)
-        db.session.commit()
+
