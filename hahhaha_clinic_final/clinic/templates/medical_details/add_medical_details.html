@@ -48,7 +48,7 @@
 <div class="table-responsive">
     <nav aria-label="Page navigation example">
         <ul class="pagination">
-            {% for idx in range(1,page+1) %}
+            {% for idx in range(1,page + 1) %}
             <li class="page-item"><a class="page-link" href="{{url_for('medical_details',page=idx)}}">{{ idx }}</a>
             </li>
             {% endfor %}
