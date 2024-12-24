@@ -5,7 +5,7 @@
                 <a class="nav-link active" href="/">Trang chủ</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Private Clinic</a>
+                <a class="nav-link" href="#">SaiGon Care</a>
             </li>
             {% if current_user.is_authenticated %}
             <!-- Dropdown cho người dùng đã đăng nhập -->
@@ -24,6 +24,7 @@
                     <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
                     {% if current_user.user_role.value == 'patient' %}
                     <li><a class="dropdown-item" href="{{ url_for('appointment') }}">Lịch khám</a></li>
+                     <li><a class="dropdown-item" href="{{ url_for('history_medical_detail') }}">Lịch sử bệnh</a></li>
                     {% endif %}
                 </ul>
             </li>
@@ -32,17 +33,30 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('register_appointment') }}">Đăng ký lịch khám</a>
             </li>
+                <li class="nav-item">
+                <a class="nav-link" href="/paymentlist">Danh sách thanh toán</a>
+            </li>
 
-<!--            Đăng nhập với tư cách y tá-->
+<!--            Đăng nhập với tư cách y tá -->
             {% elif current_user.user_role.value == 'nurse' %}
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('register_appointment') }}">Đăng ký lịch khám </a>
+                <a class="nav-link" href="{{ url_for('search_patient') }}">Đăng ký lịch khám </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Danh sách đăng ký</a>
+                <a class="nav-link" href="{{ url_for('list_appointment') }}">Danh sách khám</a>
             </li>
-<!--đăng nhập với tư cách ??????? -->
+                <li class="nav-item">
+                <a class="nav-link" href="/payment">Thanh toán</a>
+            </li>
 
+<!--            đăng nhập với tư cách bác sĩ -->
+            {% elif current_user.user_role.value == 'doctor' %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('medical_details') }}">Tạo phiếu khám bệnh</a>
+            </li>
+
+
+<!--đăng nhập với tư cách ??????? -->
 
             {% endif %}
             <li class="nav-item">

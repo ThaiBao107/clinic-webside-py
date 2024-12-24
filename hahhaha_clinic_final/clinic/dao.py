@@ -1,4 +1,6 @@
 # file chứa các hàm xử lý gọi sử lý thêm xóa sửa, kiểm tra v..v
+from datetime import datetime
+
 from sqlalchemy import func
 
 from clinic import app, db, utils, MAX_PATIENT
@@ -89,8 +91,6 @@ def load_medical_details(**kwargs):
     pass
 
 
-def get_user_by_id(user_id):
-    return User.query.get(user_id)
 
 
 def get_user(user_id):
@@ -132,19 +132,17 @@ def get_info(user_id = None):
 def payment_total(medical_id=None):
     total = 0
     print(medical_id)
-    query = Payment.query.filter(Payment.medicaldetail_id == medical_id).all()
+    query = Payment.query.filter(Payment.medicalDetail_id == medical_id).all()
     print(query)
     if query:
         for p in query:
             if p.trangthai.__eq__("Condition.PAID"):
                 total += int(p.sum)
-
-
     return total
 
 def get_payment(medical_id=None):
     query = db.session.query(MedicalDetails, Payment)\
-    .filter(MedicalDetails.id == Payment.medicaldetail_id)
+    .filter(MedicalDetails.id == Payment.medicalDetail_id)
 
     if query:
        query = query.filter(MedicalDetails.id == medical_id).all()
@@ -167,8 +165,8 @@ def get_pay(medical_id =None):
     query = db.session.query(Drug, DrugDetail, MedicalDetails)\
     .filter(DrugDetail.drug == Drug.id) \
     .filter(MedicalDetails.id == DrugDetail.medicalDetails)
-
     if query:
+        print("Do get pay")
         query = query.filter(MedicalDetails.id == medical_id)
 
     return query.all()
@@ -180,7 +178,7 @@ def get_pay(medical_id =None):
 
 def get_Payment2(medical_id=None):
     query = db.session.query(MedicalDetails, Payment) \
-        .filter(MedicalDetails.id == Payment.medicaldetail_id)
+        .filter(MedicalDetails.id == Payment.medicalDetail_id)
     if query:
         query = query.filter(MedicalDetails.id == medical_id).all()
         print(query)
@@ -206,46 +204,24 @@ def create_payment(date, sum, nurse_id, idGiaoDich, medical_id):
 def add_payment(date, sum, nurse_id, medical_id, idGiaoDich, loai):
     p = None
     if loai == "radio_offline":
-        p = OfflinePayment(sum = sum, nurse_id =nurse_id, medicaldetail_id = medical_id, trangthai = Condition.PAID)
+        p = OfflinePayment(date = datetime.now() ,sum = sum, nurse_id =nurse_id, medicalDetail_id = medical_id, trangthai = Condition.PAID)
 
     else:
-        p = OnlinePayment(sum = sum, nurse_id =nurse_id, medicaldetail_id = medical_id, paymentType = PaymentGateway.VNPAY, trangthai = Condition.UNPAID)
+        p = OnlinePayment(date = datetime.now() ,sum = sum, nurse_id =nurse_id, medicalDetail_id = medical_id, paymentType = PaymentGateway.VNPAY
+                          ,trangthai = Condition.UNPAID)
 
     return p
+
+
 
 def get_online_payment(payment_id = None):
     return OnlinePayment.query.filter(OnlinePayment.id == payment_id).first()
 
 
-def add_user(name, username, password, **kwargs):
-    password = utils.hash_password(password)
-    user_role = kwargs.get('user_role', UserRole.PATIENT)  # Lấy vai trò từ kwargs hoặc đặt mặc định là PATIENT
-    user = User(
-        name=name.strip(),
-        username=username.strip(),
-        password=password,
-        email=kwargs.get('email'),
-        avatar=kwargs.get('avatar'),
-        gender=kwargs.get('gender'),
-        dob=kwargs.get('dob'),
-        address=kwargs.get('address'),
-        phone=kwargs.get('phone'),
-        user_role=user_role
-    )
-    db.session.add(user)
-    db.session.commit()
-    patient = Patient(id=user.id)
-    db.session.add(patient)
-    db.session.commit()
 
 
 
-def check_login(username, password, role=UserRole.PATIENT):
-    # truy vấn 1 đối tượng user trong User qua id
-    user = User.query.filter_by(username=username.strip()).first()
-    if user and utils.auth_password(password, user.password):
-        return user
-    return None
+
 # def load_statics_drug():
 #     info = db.session.query(
 #         Drug.name.label('drug_name'),

@@ -8,6 +8,9 @@ from clinic.forms import ResetPasswordForm, ChangePasswordForm
 from flask_mail import Message
 import openpyxl
 from io import BytesIO
+from clinic import vnpay, settings
+from sqlalchemy import Row
+from clinic import db
 
 
 @app.route("/")
@@ -854,7 +857,7 @@ def payment():
 # @nursesnotloggedin
 def payment_return():
     inputData = request.args
-    vnp = VNpay()
+    vnp = vnpay.VNpay()
     vnp.responseData = inputData.to_dict()
     vnp_ResponseCode = inputData["vnp_ResponseCode"]
     vnp_Amount = int(inputData["vnp_Amount"])
@@ -915,6 +918,7 @@ def payment_ipn():
         # Giả sử bạn đã có hàm validate_vnpay_signature
         from hashlib import sha256
 
+
         def validate_vnpay_signature(data, secret_key):
             raw_data = sorted(data.items())
             query_string = "&".join(f"{key}={value}" for key, value in raw_data if key != 'vnp_SecureHash')
@@ -943,6 +947,7 @@ def payment_ipn():
 @app.route('/api/bills', methods=['GET', 'POST'])
 def create_bill():
     if request.method.__eq__('POST'):
+        print("Do create_bill")
         data = request.get_json()
         id = data.get('user_id')
         type = data.get('type_payment')
@@ -953,7 +958,9 @@ def create_bill():
         print(type)
         tientra_off = ""
         info = dao.get_info(id)
-        # print(info)
+        print("Medical")
+        print(info[0].id)
+
         if type == "radio_offline":
             tientra_off = utils.total(info[0].id)
             print(tientra_off)
@@ -961,12 +968,13 @@ def create_bill():
         p = None
         if type == "radio_offline":
             print(1)
-            p = dao.add_payment(date = datetime.now(), sum = tientra_off, nurse_id =8, medical_id = info[0].id,
-                                idGiaoDich = None, loai = type)  #fix lai xem sao de lam cho y ta dung
+            p = dao.add_payment(date = datetime.now(), sum = tientra_off, nurse_id = current_user.id, medical_id = info[0].id, loai = type,
+                                idGiaoDich = None)  #fix lai xem sao de lam cho y ta dung
         else:
             print(2)
-            p =dao.add_payment(date=datetime.now(), sum=tientra, nurse_id=8, medical_id=info[0].id,
-                                idGiaoDich=None, loai=type)  # fix lai xem sao de lam cho y ta dung
+            p =dao.add_payment(date=datetime.now(), sum=tientra, nurse_id=current_user.id, medical_id=info[0].id,
+                                idGiaoDich=None, loai = type)
+        # print(p)# fix lai xem sao de lam cho y ta dung
         db.session.add(p)
         db.session.commit()
         print("Xong ")
@@ -976,19 +984,17 @@ def create_bill():
 
 @app.route('/paymentlist', methods=['GET', 'POST'])
 def paymentlist():
+    print("Do pm list")
     mess = ""
     payment = None
     id = current_user.id
     info = dao.get_info(id)
     # print("paymentlist")
-    # print("Info dt")
-    # print(info)
-    if isinstance(info,Row):
+    print("Info dt")
+    print(type(info))
+    if isinstance(info, Row):
         print(1)
         payment = dao.get_payment(medical_id=info[0].id)
-    else:
-        print(2)
-        payment = dao.get_payment(medical_id=info[0][0].id)
 
     # print(payment)
     list = []
@@ -1051,7 +1057,7 @@ def process_vnpay():
         order_desc = f"Thanh toán hoá đơn cho bệnh nhân {patient_id}, với số tiền {total} VND"
 
         # Build URL Payment
-        vnp = VNpay()
+        vnp = vnpay.VNpay()
         vnp.requestData['vnp_Version'] = '2.1.0'
         vnp.requestData['vnp_Command'] = 'pay'
         vnp.requestData['vnp_TmnCode'] = settings.VNPAY_TMN_CODE
@@ -1062,7 +1068,7 @@ def process_vnpay():
         vnp.requestData['vnp_Locale'] = 'vn'
         ipaddr = request.remote_addr
         # Build URL Payment
-        vnp = VNpay()
+        vnp = vnpay.VNpay()
         vnp.requestData['vnp_Amount'] = int(total) * 100
         vnp.requestData['vnp_CurrCode'] = 'VND'
         print("Medical process ")

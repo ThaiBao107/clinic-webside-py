@@ -15,6 +15,7 @@ def auth_password(password, hashed):
 
 def total(medical_id = None):
     drugdetail = dao.get_pay(medical_id)
+    print("hello")
     print(drugdetail)
     sum = 0
     for item in drugdetail:
