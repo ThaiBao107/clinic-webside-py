@@ -22,10 +22,12 @@ from clinic import settings
 from clinic.decorators import nursesnotloggedin
 from datetime import datetime
 from clinic import app, db, utils
+from sqlalchemy.engine.row import Row
 from clinic import vnpay
 import pickle
 
 from clinic.vnpay import VNpay
+
 
 
 @app.route("/")
@@ -212,9 +214,11 @@ def payment():
     mes = ""
     info = None
     total = 0
+
     if request.method.__eq__('POST'):
         medical_id = request.form.get('k')
-        print("TMP")
+        # print("TMP")
+        print(medical_id)
         total_payment = dao.payment_total(medical_id)
 
         print(total_payment)
@@ -229,20 +233,21 @@ def payment():
             if m:
                 info = dao.get_info(m.patient_id)
                 drug_list = dao.get_drugDetail(medical_id)
-                print("haha")
-                print(medical_id)
-                print(info)
-                print(drug_list)
+                # print("haha")
+                # print(medical_id)
+                # print(info)
+                # print(drug_list)
+                total = utils.total(medical_id)
                 user_doctor = None
                 if m and info and drug_list:
                     if u.user_role.value == 'patient':
                         user_doctor = dao.get_user(info[1].id)
                 else:
-                    mes = "Khong tim thay thong tin"
+                    mes = "Không có đơn thuốc"
                 return render_template('payment/payment.html', user=u, info=info, drug_list=drug_list,
-                                           doctor=user_doctor,tiendu = tiendu, mes = mes)
+                                           doctor=user_doctor,tiendu = tiendu, mes = mes, total=total)
         else:
-                mes = "Khong tim thay thong tin"
+                mes = "Không tìm thấy không tin"
     return render_template('payment/payment.html', mes=mes)
 
 
@@ -269,16 +274,18 @@ def payment_return():
             payment_id = int(inputData["vnp_TxnRef"]) - 1000
             print(payment_id)
             p = dao.get_only_payment(payment_id)
+            pOnline = dao.get_online_payment(payment_id)
             print(p)
             if p:
                 p.trangthai = "Condition.PAID"
                 db.session.commit()
-                p.idGiaoDich = transtraction_id
+
+                pOnline.idGiaoDich = transtraction_id
                 # p.idGiaoDich = str(transtraction_id)
                 print("p.idGiaoDich")
 
                 db.session.commit()
-                print(p.idGiaoDich)
+
             print("Thanh toán thành công!")
             return redirect('/return_API')
 
@@ -292,6 +299,49 @@ def payment_return():
 @app.route('/return_API', methods=['GET'])
 def return_API():
     return render_template('payment/returnAPI.html')
+
+@app.route('/payment_return_vnpay', methods=['GET', 'POST'])
+def payment_ipn():
+    input_data = request.args if request.method == 'GET' else request.form
+    print(1)
+    if input_data:
+        # Trích xuất các tham số từ VNPay
+        vnp_TxnRef = input_data.get('vnp_TxnRef')  # Số hóa đơn
+        vnp_Amount = input_data.get('vnp_Amount')  # Số tiền
+        vnp_OrderInfo = input_data.get('vnp_OrderInfo')  # Mô tả đơn hàng
+        vnp_TransactionNo = input_data.get('vnp_TransactionNo')  # Mã giao dịch
+        vnp_ResponseCode = input_data.get('vnp_ResponseCode')  # Mã trạng thái giao dịch
+        vnp_PayDate = input_data.get('vnp_PayDate')  # Ngày giao dịch
+        vnp_BankCode = input_data.get('vnp_BankCode')  # Mã ngân hàng
+        vnp_SecureHash = input_data.get('vnp_SecureHash')  # Chữ ký
+
+        # TODO: Xác minh chữ ký bảo mật (vnp_SecureHash) với secret key của bạn
+        # Giả sử bạn đã có hàm validate_vnpay_signature
+        from hashlib import sha256
+
+        def validate_vnpay_signature(data, secret_key):
+            raw_data = sorted(data.items())
+            query_string = "&".join(f"{key}={value}" for key, value in raw_data if key != 'vnp_SecureHash')
+            hash_value = sha256((query_string + secret_key).encode('utf-8')).hexdigest()
+            return hash_value == data.get('vnp_SecureHash')
+
+        secret_key = "YOUR_SECRET_KEY"
+        if not validate_vnpay_signature(input_data, secret_key):
+            return jsonify({"RspCode": "97", "Message": "Invalid Signature"})
+
+        # Kiểm tra trạng thái giao dịch
+        if vnp_ResponseCode == '00':
+            # Xử lý đơn hàng thành công
+            print(f"Payment success for order {vnp_TxnRef} with amount {vnp_Amount}")
+            return jsonify({"RspCode": "00", "Message": "Confirm Success"})
+        else:
+            # Xử lý thất bại
+            print(f"Payment failed for order {vnp_TxnRef}")
+            return jsonify({"RspCode": "01", "Message": "Payment Failed"})
+    else:
+        # Không có dữ liệu hợp lệ
+        return jsonify({"RspCode": "99", "Message": "Invalid Request"})
+
 
 
 @app.route('/api/bills', methods=['GET', 'POST'])
@@ -331,12 +381,20 @@ def create_bill():
 @app.route('/paymentlist', methods=['GET', 'POST'])
 def paymentlist():
     mess = ""
+    payment = None
     id = current_user.id
     info = dao.get_info(id)
-    print("paymentlist")
-    print(info)
-    payment = dao.get_payment(medical_id=info[0].id)
-    print(payment)
+    # print("paymentlist")
+    # print("Info dt")
+    # print(info)
+    if isinstance(info,Row):
+        print(1)
+        payment = dao.get_payment(medical_id=info[0].id)
+    else:
+        print(2)
+        payment = dao.get_payment(medical_id=info[0][0].id)
+
+    # print(payment)
     list = []
     if payment:
         for p in payment:
@@ -365,9 +423,10 @@ def info_payment():
         print(info[0].id)
         drug_list = dao.get_drugDetail(info[0].id)
         p = dao.get_only_payment(payment_id)
-        print(1)
-        print(drug_list)
-        print(info)
+        # total = utils.total(medical_id= info[0].id)
+        # print(1)
+        # print(drug_list)
+        # print(info)
         return render_template('payment/info.html', info=info, drug_list = drug_list, tiendu = p.sum)
 
 

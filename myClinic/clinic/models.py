@@ -1,6 +1,6 @@
 from enum import Enum as UserEnum
-from enum import Enum as PaymentOnline
-from enum import Enum as PaymentGateway
+from enum import Enum as PaymentMethod
+
 from enum import Enum as TrangThai
 from enum import Enum as DrugType
 from enum import Enum as DrugUnit
@@ -29,11 +29,11 @@ class Gender(UserEnum):
     MALE = 'male'
     FEMALE = 'female'
 
-class PaymentType(PaymentOnline):
+class PaymentType(PaymentMethod):
     OFFLINE = 'offline'
     ONLINE = 'online'
 
-class PaymentGateway(PaymentGateway):
+class PaymentGateway(PaymentMethod):
     MOMO = 'momo'
     VNPAY = 'vnpay'
 
@@ -209,7 +209,7 @@ class Drug(BaseModel):
     drugUnit = Column(Integer,ForeignKey('Unit.id'), nullable=False)
     quantity = Column(Integer, nullable=False)
     name = Column(String(50), nullable=False)
-    price = Column(String(20), nullable=False)
+    price = Column(Double, nullable=False)
 
 
 class DrugDetail(BaseModel):
@@ -218,7 +218,8 @@ class DrugDetail(BaseModel):
     id = Column(Integer, primary_key=True, autoincrement=True)
     medicalDetails = Column(Integer, ForeignKey('MedicalDetails.id') , nullable=False)
     drug = Column(Integer,ForeignKey('Drug.id'), nullable=False)
-    quantity = Column(Integer, nullable=False)
+    quatity = Column(Integer, nullable=False)
+    description = Column(String(255), nullable=False)
 
 
 

@@ -4,6 +4,14 @@
         width: 200px;
         height: 30px;
     }
+    th, td {
+        border: 1px solid black;
+    }
+    style
+    {
+        border: 2px solid black;
+        border-collapse: collapse;
+    }
 </style>
 
 {% block content %}
@@ -13,7 +21,7 @@
     {% endif %}
     {% if user and info and drug_list%}
         <form action="/">
-            <h2 style="text-align: center">Thanh toán hóa đơn</h2>
+            <h2 style="text-align: center">Tạo thanh toán</h2>
             <div class="container1">
                 <div class="c1">
                     <h4 style="text-align: center">Thông tin bệnh nhân</h4>
@@ -53,53 +61,63 @@
                 </div>
                 <div class="c2">
                     {% if drug_list %}
-                        <h4 style="text-align: center">Thông tin hóa đơn</h4>
+                        <h4 style="text-align: center">Thông tin đơn thuốc</h4>
                         <span>Thông tin thuốc</span>
-                        <table class="table table-hover">
+                        <table class="table table-hover" style="border: 2px solid black;
+        border-collapse: collapse;" >
                             <thead>
                             <tr>
-                                <th>Tên thuốc</th>
-                                <th>Số lượng</th>
-                                <th>Loại</th>
-                                <th>Tiền</th>
-                                <th>Tổng(VND)</th>
+                                <th class="table-secondary"  style="border: 2px solid black;">Tên thuốc</th>
+                                <th class="table-secondary"  style="border: 2px solid black;">Số lượng</th>
+                                <th class="table-secondary"  style="border: 2px solid black;">Loại</th>
+                                <th  class="table-secondary"  style="border: 2px solid black;">Tiền</th>
+                                <th class="table-secondary"  style="border: 2px solid black;">Tổng(VND)</th>
                             </tr>
                             </thead>
                             <tbody>
                             {% for drug_d, drug, m, type in drug_list %}
                                 <tr>
-                                    <td>{{ drug.name }}</td>
-                                    <td>{{ drug_d.quantity }}</td>
-                                    <td>{{ type.name }}</td>
-                                    <td>{{ drug.price }}</td>
-                                    <td>{{ (drug_d.quantity | int ) * (drug.price | float) }}</td>
+                                    <td  style="border: 1px solid black;">{{ drug.name }}</td>
+                                    <td  style="border: 1px solid black;">{{ drug_d.quantity }}</td>
+                                    <td  style="border: 1px solid black;">{{ type.name }}</td>
+                                    <td  style="border: 1px solid black;">{{ drug.price }}</td>
+                                    <td  style="border: 1px solid black;">{{ (drug_d.quantity | int ) * (drug.price | float) }}</td>
                                 </tr>
                             {% endfor %}
                             </tbody>
                         </table>
                         <span>Thông tin khám bệnh </span>
-                        <table class="table table-hover">
+                        <table class="table table-hover" style="border: 2px solid black;
+        border-collapse: collapse;">
                             <thead>
                             <tr>
-                                <th>Thông tin</th>
-                                <th>Số lượng</th>
-                                <th>Tiền</th>
-                                <th>Tổng(VND)</th>
+                                <th class="table-secondary"  style="border: 2px solid black;">Thông tin</th>
+                                <th class="table-secondary"  style="border: 2px solid black;">Số lượng</th>
+                                <th class="table-secondary"  style="border: 2px solid black;">Tiền</th>
+                                <th class="table-secondary"  style="border: 2px solid black;">Tổng(VND)</th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr>
-                                <td>Tiền khám</td>
-                                <td>1</td>
-                                <td>100000</td>
-                                <td name="medicine_price">100000</td>
+                                <td style="border: 2px solid black;">Tiền khám</td>
+                                <td style="border: 2px solid black;">1</td>
+                                <td style="border: 2px solid black;">100000</td>
+                                <td name="medicine_price" style="border: 2px solid black;">100000</td>
 
                             </tr>
                             </tbody>
                         </table>
+                         <p id="total" style="line-height: 1; display: none">{{ tiendu }} </p>
                         <div class="alert alert-success ">
-                            <p id="total">{{ tiendu }} </p>
+                            <span>Tổng tiền: </span>
+                            <span>{{ total | int }} VND</span>
                         </div>
+
+                        <div class="alert alert-warning ">
+                            <span>Tiền còn thiếu: </span>
+                            <span>{{ tiendu}} VND</span>
+                        </div>
+
                         </div>
                         </div>
                     {% endif %}

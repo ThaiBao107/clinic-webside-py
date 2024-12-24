@@ -82,12 +82,14 @@ def get_info(user_id = None):
 
 def payment_total(medical_id=None):
     total = 0
+    print(medical_id)
     query = Payment.query.filter(Payment.medicaldetail_id == medical_id).all()
     print(query)
     if query:
         for p in query:
             if p.trangthai.__eq__("Condition.PAID"):
                 total += int(p.sum)
+
 
     return total
 
@@ -162,4 +164,6 @@ def add_payment(date, sum, nurse_id, medical_id, idGiaoDich, loai):
 
     return p
 
+def get_online_payment(payment_id = None):
+    return OnlinePayment.query.filter(OnlinePayment.id == payment_id).first()
 
