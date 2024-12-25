@@ -37,7 +37,11 @@
                         </span>
                     </div>
                     <div>
-                        <a href="#" class="btn btn-outline-dark btn-sm"><i class="bi bi-eye"></i> Xem chi tiết</a>
+                        <a href="{{ url_for('view_history_detail', medical_id=h.id) }}"
+                           class="btn btn-outline-dark btn-sm">
+                            <i class="bi bi-eye"></i> Xem chi tiết
+                        </a>
+
                     </div>
                 </li>
                 {% endfor %}

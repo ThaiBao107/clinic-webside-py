@@ -12,11 +12,11 @@
 <div class="row" style="background-color:lavender;">
     <form method="POST" action="{{ url_for('medical_details') }}">
         <div class="d-flex align-items-center" style="margin-top: 10px">
-            <input type="hidden" name="action" value="search_patient">
-            <label class="form-label">Mã bệnh nhân</label>
+            <input type="hidden" name="action" value="search_appointment">
+            <label class="form-label">Mã lịch khám</label>
             <div class="search-box">
                 <input type="text" class="form-control search-input" placeholder="Search..." style="margin-top:23px"
-                       name="patient_id" required >
+                       name="appointment_id" required>
                 <button type="button" id="search_button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                          class="bi bi-search search-icon" viewBox="0 0 16 16">
@@ -89,7 +89,7 @@
 </div>
 <form method="POST" action="{{ url_for('medical_details') }}" enctype="multipart/form-data">
     <input type="hidden" id="current_user_id" value="{{ current_user.id }}">
-    <input type="hidden"  id="patient_id" name="patient_id" value="{{ patient_info.id }}">
+    <input type="hidden" id="patient_id" name="patient_id" value="{{ patient_info.id }}">
     <input type="hidden" id="appoint_id" name="appoint_id" value="{{ patient_appoint.id }}">
     <div class="row" style="margin-top: 40px; border: 2px solid">
         <!--      Thong tin benh nhan  -->
@@ -98,8 +98,9 @@
             <h5 class="mb-6" style="text-align: center; background-color: #bec2c3; padding: 0">Thông tin bệnh nhân</h5>
             <div class="form-section mb-6" style="padding:12px">
                 <div class="d-flex justify-content-between mb-2" style="margin-top: 3px">
-<!--                    <button onclick="view_history_medical_detail()" class="btn btn-primary mb-3 ">Xem lịch sử bệnh</button>-->
-                    <a href="{{ url_for('history_medical_detail', patient_id=patient_info.id) }}" class="btn btn-primary mb-3">Xem lịch sử bệnh</a>
+                    <!--                    <button onclick="view_history_medical_detail()" class="btn btn-primary mb-3 ">Xem lịch sử bệnh</button>-->
+                    <a href="{{ url_for('history_medical_detail', patient_id=patient_info.id) }}"
+                       class="btn btn-primary mb-3">Xem lịch sử bệnh</a>
 
                 </div>
 
@@ -152,7 +153,8 @@
                     <!--     Type                -->
                     <div class="form-group">
                         <label for="type">Loại Thuốc</label>
-                        <select id="type" name="types" class="custom-select w-100">
+                        <select id="type" name="types" class="custom-select w-100 form-control">
+                            <option value="" selected>-- Chọn loại thuốc --</option>
                             {% for type in types %}
                             <option value="{{ type.id }}">{{ type.name }}</option>
                             {% endfor %}
@@ -161,8 +163,8 @@
 
                     <!--       nameDrug            -->
 
-                    <div class="input-group mb-3">
-                        <label for="drug_name" class="form-label">Tên thuốc:</label>
+                    <div class="form-group">
+                       <label for="type">Tên Thuốc</label>
                         <input type="text" class="form-control" id="drug_name" name="drug_name"
                                placeholder="Nhập ten thuoc">
                     </div>
@@ -173,7 +175,8 @@
                 <div class="d-flex justify-content-between mb-4">
                     <div class="form-group">
                         <label for="units">Đơn vị:</label>
-                        <select id="units" name="units" class="custom-select w-100">
+                        <select id="units" name="units" class="custom-select w-100 form-control">
+                            <option value="" selected>-- Chọn đơn vị thuốc --</option>
                             {% for unit in units %}
                             <option value="{{ unit.id }}">{{ unit.name }}</option>
                             {% endfor %}
@@ -183,14 +186,14 @@
                     <div class="form-group">
                         <label for="quantity"> Số lượng:</label>
                         <input type="number" id="quantity" name="quantity" class="form-control" min="0" max="100"
-                               value="0" step="1" >
+                               value="0" step="1">
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-between mb-2">
                     <div class="form-group w-100">
                         <label for="description">Cách dùng:</label>
-                        <textarea class="form-control" rows="6" id="description" name="description" ></textarea>
+                        <textarea class="form-control" rows="6" id="description" name="description"></textarea>
                     </div>
                 </div>
                 <div class="d-flex justify-content-around mb-4" style="margin-top: 15%">
@@ -239,7 +242,8 @@
                 <td>{{ drug_detail.quantity }}</td>
                 <td>{{ drug_detail.description }}</td>
                 <td>
-                     <input type="button" onclick="delete_drug_detail({{ drug_detail.drug_id }})" value="xóa" class="btn btn-danger"/>
+                    <input type="button" onclick="delete_drug_detail({{ drug_detail.drug_id }})" value="xóa"
+                           class="btn btn-danger"/>
                 </td>
             </tr>
             {% endfor %}

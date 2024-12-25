@@ -1,7 +1,7 @@
 # file chứa các hàm xử lý gọi sử lý thêm xóa sửa, kiểm tra v..v
 from datetime import datetime
 
-from sqlalchemy import func
+from sqlalchemy import func, distinct, extract
 
 from clinic import app, db, utils, MAX_PATIENT
 from clinic.models import User, UserRole, Patient, Appointment, AppointmentList, Drug, Unit, DrugDetail, Type, Unit, MedicalDetails, Payment, OnlinePayment, OfflinePayment \
@@ -217,8 +217,41 @@ def add_payment(date, sum, nurse_id, medical_id, idGiaoDich, loai):
 def get_online_payment(payment_id = None):
     return OnlinePayment.query.filter(OnlinePayment.id == payment_id).first()
 
+def products_month_stats(year):
+    return db.session.query(extract('month',DrugDetail.create_date), func.sum(DrugDetail.quantity*Drug.price))\
+        .join(Drug, DrugDetail.drug == (Drug.id))\
+        .filter(extract('year', DrugDetail.create_date)==year)\
+        .group_by(extract('month', DrugDetail.create_date))\
+        .order_by(extract('month',DrugDetail.create_date)).all()
+
+def get_revenue_patient_stats(month, year):
+    #Thống kê doanh thu và số lượng bệnh nhân theo tháng
+    revenue_stats = db.session.query(
+        func.sum(MedicalDetails.total).label('total_revenue'),
+        func.count(MedicalDetails.id).label('patient_count')
+    ).filter(
+        extract('month', MedicalDetails.create_date) == month,
+        extract('year', MedicalDetails.create_date) == year
+    ).first()
+
+    return {
+        'total_revenue': float(revenue_stats.total_revenue) if revenue_stats.total_revenue else 0,
+        'patient_count': revenue_stats.patient_count
+    }
 
 
+def get_medicine_usage_stats(month, year):
+    #Thống kê tần suất sử dụng thuốc theo tháng
+    return db.session.query(
+        Drug.name,
+        func.sum(DrugDetail.quantity).label('total_quantity'),
+        func.count(distinct(MedicalDetails.id)).label('prescription_count')
+    ).join(DrugDetail, Drug.id == DrugDetail.drug) \
+        .join(MedicalDetails, DrugDetail.medicalDetails == MedicalDetails.id) \
+        .filter(
+        extract('month', MedicalDetails.create_date) == month,
+        extract('year', MedicalDetails.create_date) == year
+    ).group_by(Drug.name).all()
 
 
 

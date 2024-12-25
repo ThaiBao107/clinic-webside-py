@@ -7,6 +7,7 @@ from flask_admin import Admin, BaseView, expose
 from clinic.models import User, UserRole, Doctor, Nurse, Patient, Type, Unit, Drug
 from flask_login import current_user, logout_user
 from clinic import dao
+from datetime import datetime
 
 admin = Admin(app=app, name="SaiGon Care", template_mode='bootstrap4')
 
@@ -209,8 +210,30 @@ class DrugManagement(AdminBaseView):
 class StatisticsReport(AdminBaseView):
     @expose('/')
     def index(self):
-        return self.render('admin/statistics_report.html')
+        year = request.args.get('year',"")
+        month = request.args.get('month',"")
 
+        try:
+            year = int(year)
+            month = int(month)
+        except (TypeError, ValueError):
+            year = datetime.now().year
+            month = datetime.now().month
+
+        # Lấy thống kê theo tháng và năm
+        monthly_stats = dao.products_month_stats(year=year)
+        revenue_patient_stats = dao.get_revenue_patient_stats(month=month, year=year)
+        medicine_usage = dao.get_medicine_usage_stats(month=month, year=year)
+
+        return self.render('admin/statistics_report.html',
+                           month_stats=monthly_stats,
+                           revenue_patient_stats=revenue_patient_stats,
+                           medicine_usage=medicine_usage,
+                           selected_month=month,
+                           selected_year=year)
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.user_role == UserRole.ADMIN
 
 
 admin.add_view(MyUserView(User, db.session))
