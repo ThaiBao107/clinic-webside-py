@@ -1,0 +1,192 @@
+{% extends 'admin/base.html' %}
+
+{% block body %}
+    <h1 class="text text-center text-danger">THỐNG KÊ BÁO CÁO</h1>
+
+    <!-- Form chọn thời gian -->
+    <div class="row mb-4">
+        <div class="col-md-6 offset-md-3">
+            <form method="get" class="form-inline justify-content-center">
+                <div class="form-group mx-2">
+                    <input type="number" min="2000" max="2024" class="form-control"
+                           placeholder="Năm..." name="year" value="{{ selected_year }}">
+                </div>
+                <div class="form-group mx-2">
+                    <input type="number" min="1" max="12" class="form-control"
+                           placeholder="Tháng..." name="month" value="{{ selected_month }}">
+                </div>
+                <button type="submit" class="btn btn-primary">Thống kê</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Thống kê doanh thu và bệnh nhân theo tháng -->
+    <div class="row justify-content-around">
+        <div class="col-md-4 col-xs-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Thống kê tháng {{ selected_month }}/{{ selected_year }}</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Tổng doanh thu:</strong> {{ "{:,.1f}".format(revenue_patient_stats.total_revenue) }} VND</p>
+                    <p><strong>Số lượng bệnh nhân:</strong> {{ revenue_patient_stats.patient_count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7 col-xs-12">
+
+                    <h4>Biểu đồ doanh thu theo tháng {{ selected_month }}</h4>
+                    <canvas id="month_stats"></canvas>
+
+        </div>
+    </div>
+
+
+    <!-- Bảng thống kê thuốc -->
+    <div class="row justify-content-around">
+        <div class="col-md-5 col-xs-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Thống kê sử dụng thuốc</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tên thuốc</th>
+                                <th>Số lượng sử dụng</th>
+                                <th>Số đơn thuốc</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for med in medicine_usage %}
+                            <tr>
+                                <td>{{ med.name }}</td>
+                                <td>{{ med.total_quantity }}</td>
+                                <td>{{ med.prescription_count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7 col-xs-12">
+            <h4>Biểu đồ tần suất sử dụng thuốc tháng {{ selected_month }}</h4>
+            <canvas id="medicine_usage_chart"></canvas>
+        </div>
+    </div>
+
+    <!-- Biểu đồ doanh thu theo tháng -->
+    <div class="row">
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    // Dữ liệu biểu đồ doanh thu
+    let labels = [];
+    let dataValues = [];
+    let backgroundColors = [];
+    let borderColors = [];
+    let r, g, b;
+
+    // Dữ liệu biểu đồ line tần suất sử dụng thuốc
+    let medicineLabels = [];
+    let medicineData = [];
+
+    {% for med in medicine_usage %}
+        medicineLabels.push("{{ med.name }}");
+        medicineData.push({{ med.total_quantity }});
+    {% endfor %}
+
+    {% for s in month_stats %}
+        labels.push("Tháng {{ s[0] }}");
+        dataValues.push({{ s[1] if s[1] else 0 }});
+        r = Math.random() * 255;
+        g = Math.random() * 255;
+        b = Math.random() * 255;
+
+        backgroundColors.push(`rgba(${r}, ${g}, ${b}, 0.2)`);
+        borderColors.push(`rgba(${r}, ${g}, ${b}, 1)`);
+    {% endfor %}
+
+    window.onload = function() {
+        const ctx = document.getElementById('month_stats').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Thống kê tháng',
+                    data: dataValues,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' VNĐ';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toLocaleString() + ' VNĐ';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        // Biểu đồ tần suất sử dụng thuốc (Line Chart)
+        const medicineCtx = document.getElementById('medicine_usage_chart').getContext('2d');
+        const myLineChart = new Chart(medicineCtx, {
+            type: 'line',
+            data: {
+                labels: medicineLabels,
+                datasets: [{
+                    label: 'Tần suất sử dụng thuốc theo tháng {{ selected_month }}',
+                    data: medicineData,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 2,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toLocaleString() + ' lần';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    };
+</script>
+
+{% endblock %}
