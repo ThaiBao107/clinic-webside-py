@@ -202,10 +202,10 @@ class DrugDetail(BaseModel):
 if __name__ == '__main__':
     with app.app_context():
         pass
-        #db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
-        # db.session.commit()
-        #
-        # # #Existing admin, patient, nurse entries
+        db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
+        db.session.commit()
+
+        # #Existing admin, patient, nurse entries
         # admin1 = User(
         #     name='admin1',
         #     username='admin1',
@@ -253,7 +253,7 @@ if __name__ == '__main__':
         # db.session.commit()
         # patient_entry2 = Patient(id=patient2.id)
         # db.session.add(patient_entry2)
-
+        #
         # patient3 = User(
         #     name='patient3',
         #     username='patient3',
@@ -303,15 +303,15 @@ if __name__ == '__main__':
         # nurse_entry1 = Nurse(id=nurse2.id)
         # db.session.add(nurse_entry1)
         # db.session.commit()
-
-         # #Create appointment lists
+        #
+        #  #Create appointment lists
         # appointment_list1 = AppointmentList(schedule_date=date(2024, 12, 5), nurse_id=5)
         # appointment_list2 = AppointmentList(schedule_date=date(2024, 12, 6), nurse_id=6)
         # db.session.add(appointment_list1)
         # db.session.add(appointment_list2)
         # db.session.commit()
-
-        # Add appointments to the lists
+        #
+        # #Add appointments to the lists
         # appointment1 = Appointment(
         #     description="Tái khám",
         #     schedule_date=date(2024, 11, 5),
@@ -346,7 +346,7 @@ if __name__ == '__main__':
         # db.session.add(appointment3)
         # db.session.add(appointment4)
         # db.session.commit()
-
+        #
         # n3 = User(name='Ha Vi', username='nurse3', password=str(utils.hash_password('1234')), phone="01234567",
         #           gender=Gender.FEMALE,
         #           address='123 HVC, TPHCM', user_role=UserRole.NURSE, email="2251093n1@gmail.com",
@@ -409,8 +409,8 @@ if __name__ == '__main__':
         #
         # db.session.add_all([drug1, drug2, drug3])
         # db.session.commit()
-
-
+        #
+        #
         # medical1 = MedicalDetails(diagnose="Sốt", symptoms="Ho, sốt cao", doctor_id=11, patient_id=2, total=300000)
         # medical2 = MedicalDetails(diagnose="Viêm họng", symptoms="Đau họng, khó nuốt", doctor_id=11, patient_id=4,
         #                           total=150000)
@@ -422,11 +422,11 @@ if __name__ == '__main__':
         # db.session.add(medical2)
         # db.session.commit()
 
-        # detail1 = DrugDetail(medicalDetails=9, drug=1, quantity=10, description='Ăn trước khi uống')
-        # detail2 = DrugDetail(medicalDetails=9, drug=1, quantity=5, description='Sáng và chiều')
-        # detail3 = DrugDetail(medicalDetails=11, drug=2, quantity=20,description='Chỉ uống khi sốt trên 38 độn')
-        # detail4 = DrugDetail(medicalDetails=11, drug=3, quantity=15, description='Uống khi khó tiêu')
-        # detail5 = DrugDetail(medicalDetails=9, drug=4, quantity=8, description='Uống khi hạ đường huyết')
-        #
-        # db.session.add_all([detail1, detail2, detail3, detail4, detail5])
-        # db.session.commit()
+        detail1 = DrugDetail(medicalDetails=1, drug=1, quantity=10, description='Ăn trước khi uống')
+        detail2 = DrugDetail(medicalDetails=1, drug=1, quantity=5, description='Sáng và chiều')
+        detail3 = DrugDetail(medicalDetails=2, drug=2, quantity=20,description='Chỉ uống khi sốt trên 38 độn')
+        detail4 = DrugDetail(medicalDetails=2, drug=3, quantity=15, description='Uống khi khó tiêu')
+        detail5 = DrugDetail(medicalDetails=3, drug=4, quantity=8, description='Uống khi hạ đường huyết')
+
+        db.session.add_all([detail1, detail2, detail3, detail4, detail5])
+        db.session.commit()
