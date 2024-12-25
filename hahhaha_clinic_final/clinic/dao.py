@@ -1,8 +1,11 @@
 # file chứa các hàm xử lý gọi sử lý thêm xóa sửa, kiểm tra v..v
+from datetime import datetime
+
 from sqlalchemy import func
 
 from clinic import app, db, utils, MAX_PATIENT
-from clinic.models import User, UserRole, Patient, Appointment, AppointmentList, Drug, Unit, DrugDetail, Type, Unit
+from clinic.models import User, UserRole, Patient, Appointment, AppointmentList, Drug, Unit, DrugDetail, Type, Unit, MedicalDetails, Payment, OnlinePayment, OfflinePayment \
+    , Doctor, PaymentGateway,Condition
 
 
 def add_user(name, username, password, **kwargs):
@@ -86,6 +89,138 @@ def count_drugs():
 
 def load_medical_details(**kwargs):
     pass
+
+
+
+
+def get_user(user_id):
+    return User.query.filter(User.id == user_id).first()
+
+
+def get_medicaldetails(medical_id = None):
+    return MedicalDetails.query.filter(MedicalDetails.id == medical_id).first()
+
+
+#Moi sua
+def get_info(user_id = None):
+    query = db.session.query(MedicalDetails, Doctor, User)\
+    .filter(User.id == MedicalDetails.patient_id) \
+    .filter(MedicalDetails.doctor_id == Doctor.id)
+
+    if query:
+        query = query.filter(User.id == user_id).all()
+        print(query)
+        for k in query:
+            total_paid = payment_total(medical_id=k[0].id)
+            print("total")
+            print(total_paid)
+            m= MedicalDetails.query.get(k[0].id)
+            total_medical = utils.total(medical_id=k[0].id)
+            print(total_medical)
+            if total_medical - total_paid <= 0:
+                continue
+            else:
+                query = k
+                break
+
+        print("All phieu kham benh")
+        print(query)
+
+
+    return query
+
+def payment_total(medical_id=None):
+    total = 0
+    print(medical_id)
+    query = Payment.query.filter(Payment.medicalDetail_id == medical_id).all()
+    print(query)
+    if query:
+        for p in query:
+            if p.trangthai.__eq__("Condition.PAID"):
+                total += int(p.sum)
+    return total
+
+def get_payment(medical_id=None):
+    query = db.session.query(MedicalDetails, Payment)\
+    .filter(MedicalDetails.id == Payment.medicalDetail_id)
+
+    if query:
+       query = query.filter(MedicalDetails.id == medical_id).all()
+
+    return query
+
+
+def get_drugDetail(medicalDetails_id=None):
+    query = db.session.query(DrugDetail, Drug, MedicalDetails, Type ) \
+        .filter(MedicalDetails.id == DrugDetail.medicalDetails) \
+        .filter(DrugDetail.drug == Drug.id) \
+        .filter(Drug.drugType == Type.id)
+
+    if medicalDetails_id:
+        query = query.filter(MedicalDetails.id == medicalDetails_id)
+    return query.all()
+
+
+def get_pay(medical_id =None):
+    query = db.session.query(Drug, DrugDetail, MedicalDetails)\
+    .filter(DrugDetail.drug == Drug.id) \
+    .filter(MedicalDetails.id == DrugDetail.medicalDetails)
+    if query:
+        print("Do get pay")
+        query = query.filter(MedicalDetails.id == medical_id)
+
+    return query.all()
+
+
+
+
+
+
+def get_Payment2(medical_id=None):
+    query = db.session.query(MedicalDetails, Payment) \
+        .filter(MedicalDetails.id == Payment.medicalDetail_id)
+    if query:
+        query = query.filter(MedicalDetails.id == medical_id).all()
+        print(query)
+        for p in query:
+            if p[1].trangthai.__eq__("Condition.UNPAID"):
+                print(p[1].id)
+                return p[1].id
+    return None
+
+
+def get_only_payment(payment_id = None):
+    return Payment.query.filter(Payment.id == payment_id).first()
+
+
+
+def create_payment(date, sum, nurse_id, idGiaoDich, medical_id):
+    p = OnlinePayment(date=date, sum=sum, nurse_id=nurse_id, paymentType = PaymentGateway.VNPAY, idGiaoDich = idGiaoDich,medicaldetail_id = medical_id)
+    db.session.add(p)
+    db.session.commit()
+
+
+
+def add_payment(date, sum, nurse_id, medical_id, idGiaoDich, loai):
+    p = None
+    if loai == "radio_offline":
+        p = OfflinePayment(date = datetime.now() ,sum = sum, nurse_id =nurse_id, medicalDetail_id = medical_id, trangthai = Condition.PAID)
+
+    else:
+        p = OnlinePayment(date = datetime.now() ,sum = sum, nurse_id =nurse_id, medicalDetail_id = medical_id, paymentType = PaymentGateway.VNPAY
+                          ,trangthai = Condition.UNPAID)
+
+    return p
+
+
+
+def get_online_payment(payment_id = None):
+    return OnlinePayment.query.filter(OnlinePayment.id == payment_id).first()
+
+
+
+
+
 
 # def load_statics_drug():
 #     info = db.session.query(

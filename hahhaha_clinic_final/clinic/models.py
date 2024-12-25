@@ -26,8 +26,13 @@ class PaymentGateway(PaymentMethod):
     MOMO = 'momo'
     VNPAY = 'vnpay'
 
+class Condition(PaymentMethod):
+    PAID = 'paid',
+    UNPAID = 'unpaid'
+
 class User(db.Model, UserMixin):
     __tablename__ = 'User'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
     username = Column(String(50), nullable=False, unique=True)
@@ -59,6 +64,7 @@ class User(db.Model, UserMixin):
 
 class Doctor(db.Model):
     __tablename__ = 'Doctor'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, ForeignKey('User.id'),primary_key= True )
     specialization = Column(String(50), nullable=False)
     degree = Column(String(50), nullable=False)
@@ -67,10 +73,12 @@ class Doctor(db.Model):
 
 class Admin(db.Model):
     __tablename__ = 'Admin'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, ForeignKey('User.id'), primary_key=True)
 
 class Patient(db.Model):
     __tablename__ = 'Patient'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, ForeignKey('User.id'), primary_key=True)
     appointments = relationship('Appointment', backref='patient', lazy=True)
     medicalDetails = relationship('MedicalDetails', backref='patient', lazy=True)
@@ -78,6 +86,7 @@ class Patient(db.Model):
 
 class Nurse(db.Model):
     __tablename__ = 'Nurse'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, ForeignKey('User.id'), primary_key=True)
     appointmentLists = relationship('AppointmentList', backref='nurse', lazy=True)
     payments = relationship('Payment', backref='nurse', lazy=True)
@@ -90,6 +99,7 @@ class BaseModel(db.Model):
 
 class Payment(db.Model):
     __tablename__ = 'Payment'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, autoincrement=True)
     date = Column(Date, default=date.today)
     sum = Column(String(20), nullable=False)
@@ -99,6 +109,7 @@ class Payment(db.Model):
 
 class MedicalDetails(BaseModel):
     __tablename__ = 'MedicalDetails'
+    __table_args__ = {'extend_existing': True}
     id =Column(Integer, primary_key=True, autoincrement=True)
     diagnose = Column(String(50), nullable=False)
     symptoms= Column(String(50), nullable=False)
@@ -109,17 +120,20 @@ class MedicalDetails(BaseModel):
 
 
 class OnlinePayment(Payment):
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, ForeignKey('Payment.id'), nullable=False, primary_key=True)
     paymentType = Column(Enum(PaymentGateway), nullable=False)
     idGiaoDich = Column(String(50), nullable=False, unique=True)
 
 
 class OfflinePayment(Payment):
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, ForeignKey('Payment.id'), nullable=False, primary_key=True)
 
 
 class AppointmentList(BaseModel):
     __tablename__ = 'AppointmentList'
+    __table_args__ = {'extend_existing': True}
     schedule_date = Column(Date, unique=True)
     nurse_id = Column(Integer, ForeignKey('Nurse.id'), nullable=False)
     appointments = relationship('Appointment', backref='Appointment_list', lazy=True)
@@ -132,6 +146,7 @@ class Status(UserEnum):
 
 class Appointment(BaseModel):
     __tablename__ = 'Appointment'
+    __table_args__ = {'extend_existing': True}
     description = Column(String(255), nullable=False) #Vấn đề cần khám
     status = Column(Enum(Status), default=Status.PENDING) #mặc định ban đầu
     schedule_date = Column(Date, nullable=False)
@@ -147,6 +162,7 @@ class Appointment(BaseModel):
 
 class Unit(BaseModel):
     __tablename__ = 'Unit'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
 
@@ -155,6 +171,7 @@ class Unit(BaseModel):
 
 class Type(BaseModel):
     __tablename__ = 'Type'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
     def __str__(self):
@@ -162,6 +179,7 @@ class Type(BaseModel):
 
 class Drug(BaseModel):
     __tablename__ = 'Drug'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
     price = Column(Double, nullable=False)
@@ -172,17 +190,19 @@ class Drug(BaseModel):
 
 class DrugDetail(BaseModel):
     __tablename__ = 'DrugDetail'
+    __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, autoincrement=True)
     medicalDetails = Column(Integer, ForeignKey('MedicalDetails.id') , nullable=False)
     drug = Column(Integer,ForeignKey('Drug.id'), nullable=False)
-    quatity = Column( Integer, nullable=False)
+    quantity = Column( Integer, nullable=False)
     description = Column(String(255),nullable=False)
 
 
 
 if __name__ == '__main__':
     with app.app_context():
-        # db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
+        pass
+        #db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
         # db.session.commit()
         #
         # # #Existing admin, patient, nurse entries
@@ -201,7 +221,7 @@ if __name__ == '__main__':
         # db.session.commit()
         # admin_entry = Admin(id=admin1.id)
         # db.session.add(admin_entry)
-        #
+
         # patient1 = User(
         #     name='patient1',
         #     username='patient1',
@@ -233,7 +253,7 @@ if __name__ == '__main__':
         # db.session.commit()
         # patient_entry2 = Patient(id=patient2.id)
         # db.session.add(patient_entry2)
-        #
+
         # patient3 = User(
         #     name='patient3',
         #     username='patient3',
@@ -283,42 +303,42 @@ if __name__ == '__main__':
         # nurse_entry1 = Nurse(id=nurse2.id)
         # db.session.add(nurse_entry1)
         # db.session.commit()
-        #
-        # # Create appointment lists
-        # appointment_list1 = AppointmentList(schedule_date=date(2024, 12, 5), nurse_id=nurse1.id)
-        # appointment_list2 = AppointmentList(schedule_date=date(2024, 12, 6), nurse_id=nurse2.id)
+
+         # #Create appointment lists
+        # appointment_list1 = AppointmentList(schedule_date=date(2024, 12, 5), nurse_id=5)
+        # appointment_list2 = AppointmentList(schedule_date=date(2024, 12, 6), nurse_id=6)
         # db.session.add(appointment_list1)
         # db.session.add(appointment_list2)
         # db.session.commit()
-        #
-        # # Add appointments to the lists
+
+        # Add appointments to the lists
         # appointment1 = Appointment(
         #     description="Tái khám",
-        #     schedule_date=date(2024, 12, 5),
+        #     schedule_date=date(2024, 11, 5),
         #     schedule_time=datetime.strptime("08:00", "%H:%M").time(),
-        #     patient_id=patient1.id,
-        #     appointment_list_id=appointment_list1.id
+        #     patient_id=2,
+        #     appointment_list_id=1
         # )
         # appointment2 = Appointment(
         #     description="Đau răng",
         #     schedule_date=date(2024, 12, 5),
         #     schedule_time=datetime.strptime("09:00", "%H:%M").time(),
-        #     patient_id=patient2.id,
-        #     appointment_list_id=appointment_list1.id
+        #     patient_id=4,
+        #     appointment_list_id=1
         # )
         # appointment3 = Appointment(
         #     description="Bị sốt 3 ngày, khó tiêu có triệu chứng ói khuya",
         #     schedule_date=date(2024, 12, 6),
         #     schedule_time=datetime.strptime("10:00", "%H:%M").time(),
-        #     patient_id=patient1.id,
-        #     appointment_list_id=appointment_list2.id
+        #     patient_id=2,
+        #     appointment_list_id=2
         # )
         # appointment4 = Appointment(
         #     description="Tái khám",
-        #     schedule_date=date(2024, 12, 6),
+        #     schedule_date=date(2024, 2, 6),
         #     schedule_time=datetime.strptime("11:00", "%H:%M").time(),
-        #     patient_id=patient2.id,
-        #     appointment_list_id=appointment_list2.id
+        #     patient_id=4,
+        #     appointment_list_id=2
         # )
         #
         # db.session.add(appointment1)
@@ -326,7 +346,7 @@ if __name__ == '__main__':
         # db.session.add(appointment3)
         # db.session.add(appointment4)
         # db.session.commit()
-        #
+
         # n3 = User(name='Ha Vi', username='nurse3', password=str(utils.hash_password('1234')), phone="01234567",
         #           gender=Gender.FEMALE,
         #           address='123 HVC, TPHCM', user_role=UserRole.NURSE, email="2251093n1@gmail.com",
@@ -348,17 +368,17 @@ if __name__ == '__main__':
         #
         # db.session.add_all([n3, n4, n5, n6])
         # db.session.commit()
-        # nurse3 = Nurse(id = n3.id)
-        # nurse4 = Nurse(id = n4.id)
-        # nurse5 = Nurse(id = n5.id)
-        # nurse6 = Nurse(id = n6.id)
+        # nurse3 = Nurse(id = 7)
+        # nurse4 = Nurse(id = 8)
+        # nurse5 = Nurse(id = 9)
+        # nurse6 = Nurse(id = 10)
         #
         # db.session.add(nurse3)
         # db.session.add(nurse4)
         # db.session.add(nurse5)
         # db.session.add(nurse6)
         # db.session.commit()
-        #
+        # #
         # d1 = User(name='Thanh Hien', username='doctor1', password=str(utils.hash_password('1234')),
         #           phone="0123509767",
         #           gender=Gender.FEMALE,
@@ -383,29 +403,30 @@ if __name__ == '__main__':
         # db.session.add(drug1)
         # db.session.commit()
         #
-        # drug1 = Drug(name="Paradol", price=2000, drugType=t3.id, drugUnit=u1.id, quantity=500)
-        # drug2 = Drug(name="Cefixime", price=3000, drugType=t2.id, drugUnit=u1.id, quantity=300)
-        # drug3 = Drug(name="Vitamin C", price=1000, drugType=t1.id, drugUnit=u2.id, quantity=100)
+        # drug1 = Drug(name="Paradol", price=2000, drugType=1, drugUnit=1, quantity=500)
+        # drug2 = Drug(name="Cefixime", price=3000, drugType=2, drugUnit=1, quantity=300)
+        # drug3 = Drug(name="Vitamin C", price=1000, drugType=1, drugUnit=2, quantity=100)
         #
         # db.session.add_all([drug1, drug2, drug3])
         # db.session.commit()
 
 
-        medical1 = MedicalDetails(diagnose="Sốt", symptoms="Ho, sốt cao", doctor_id=11, patient_id=3, total=300000)
-        medical2 = MedicalDetails(diagnose="Viêm họng", symptoms="Đau họng, khó nuốt", doctor_id=11, patient_id=4,
-                                  total=150000)
-        medical3 = MedicalDetails(diagnose="Mệt mỏi", symptoms="Đau nhức cơ thể", doctor_id=11, patient_id=2,
-                                  total=200000)
+        # medical1 = MedicalDetails(diagnose="Sốt", symptoms="Ho, sốt cao", doctor_id=11, patient_id=2, total=300000)
+        # medical2 = MedicalDetails(diagnose="Viêm họng", symptoms="Đau họng, khó nuốt", doctor_id=11, patient_id=4,
+        #                           total=150000)
+        # medical3 = MedicalDetails(diagnose="Mệt mỏi", symptoms="Đau nhức cơ thể", doctor_id=11, patient_id=4,
+        #                           total=200000)
+        #
+        # db.session.add_all([medical1, medical2, medical3])
+        # db.session.commit()
+        # db.session.add(medical2)
+        # db.session.commit()
 
-        db.session.add_all([medical1, medical2, medical3])
-        db.session.commit()
-
-        detail1 = DrugDetail(medicalDetails=3, drug=1, quatity=10, description='Ăn trước khi uống')
-        detail2 = DrugDetail(medicalDetails=3, drug=1, quatity=5, description='Sáng và chiều')
-        detail3 = DrugDetail(medicalDetails=2, drug=2, quatity=20,description='Chỉ uống khi sốt trên 38 độn')
-        detail4 = DrugDetail(medicalDetails=2, drug=3, quatity=15, description='Uống khi khó tiêu')
-        detail5 = DrugDetail(medicalDetails=1, drug=4, quatity=8, description='Uống khi hạ đường huyết')
-
-        db.session.add_all([detail1, detail2, detail3, detail4, detail5])
-        db.session.commit()
-
+        # detail1 = DrugDetail(medicalDetails=9, drug=1, quantity=10, description='Ăn trước khi uống')
+        # detail2 = DrugDetail(medicalDetails=9, drug=1, quantity=5, description='Sáng và chiều')
+        # detail3 = DrugDetail(medicalDetails=11, drug=2, quantity=20,description='Chỉ uống khi sốt trên 38 độn')
+        # detail4 = DrugDetail(medicalDetails=11, drug=3, quantity=15, description='Uống khi khó tiêu')
+        # detail5 = DrugDetail(medicalDetails=9, drug=4, quantity=8, description='Uống khi hạ đường huyết')
+        #
+        # db.session.add_all([detail1, detail2, detail3, detail4, detail5])
+        # db.session.commit()
