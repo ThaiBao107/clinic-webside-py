@@ -225,6 +225,12 @@ def products_month_stats(year):
         .order_by(extract('month',DrugDetail.create_date)).all()
 
 def get_revenue_patient_stats(month, year):
+
+    paid_payments=(
+        Payment.query.filter(Payment.trangthai.__eq__("Condition.PAID"))
+                             .subquery()
+
+    )
     #Thống kê doanh thu và số lượng bệnh nhân theo tháng
     revenue_stats = db.session.query(
         func.sum(MedicalDetails.total).label('total_revenue'),
@@ -233,11 +239,26 @@ def get_revenue_patient_stats(month, year):
         extract('month', MedicalDetails.create_date) == month,
         extract('year', MedicalDetails.create_date) == year
     ).first()
+     #mỗi phiếu khám bệnh cộng thêm 100.000 phí khám bệnh mặc định
+    if revenue_stats and revenue_stats.patient_count:
+        # Calculate bonus using app.config['SUM']
+        bonus_amount = revenue_stats.patient_count * app.config['SUM']
+
+        # Add bonus to total revenue
+        total_revenue = float(revenue_stats.total_revenue) if revenue_stats.total_revenue else 0
+        total_with_bonus = total_revenue + bonus_amount
+
+        return {
+            'total_revenue': total_with_bonus,
+            'patient_count': revenue_stats.patient_count
+        }
 
     return {
-        'total_revenue': float(revenue_stats.total_revenue) if revenue_stats.total_revenue else 0,
-        'patient_count': revenue_stats.patient_count
+        'total_revenue': 0,
+        'patient_count': 0
     }
+
+
 
 
 def get_medicine_usage_stats(month, year):
