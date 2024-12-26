@@ -9,7 +9,7 @@
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/venv1" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.11 (hahhaha_clinic_final) (2)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.11 (fix_my_Clinic)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TemplatesService">
