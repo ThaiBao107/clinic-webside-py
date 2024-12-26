@@ -101,7 +101,7 @@ class Payment(db.Model):
     __tablename__ = 'Payment'
     __table_args__ = {'extend_existing': True}
     id = Column(Integer, primary_key=True, autoincrement=True)
-    date = Column(DateTime, default=datetime.today)
+    date = Column(Date, default=datetime.today)
     sum = Column(String(20), nullable=False)
     nurse_id = Column(Integer, ForeignKey('Nurse.id'), nullable=False)
     medicalDetail_id = Column(Integer, ForeignKey('MedicalDetails.id'), nullable=False)
@@ -202,7 +202,7 @@ class DrugDetail(BaseModel):
 if __name__ == '__main__':
     with app.app_context():
         pass
-        #db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
+        # db.create_all()  # Tạo các bảng trong cơ sở dữ liệu
         # db.session.commit()
         #
         # # #Existing admin, patient, nurse entries
@@ -221,7 +221,7 @@ if __name__ == '__main__':
         # db.session.commit()
         # admin_entry = Admin(id=admin1.id)
         # db.session.add(admin_entry)
-
+        #
         # patient1 = User(
         #     name='patient1',
         #     username='patient1',
@@ -237,7 +237,7 @@ if __name__ == '__main__':
         # db.session.commit()
         # patient_entry1 = Patient(id=patient1.id)
         # db.session.add(patient_entry1)
-
+        #
         # patient2 = User(
         #     name='patient2',
         #     username='patient2',
@@ -253,7 +253,7 @@ if __name__ == '__main__':
         # db.session.commit()
         # patient_entry2 = Patient(id=patient2.id)
         # db.session.add(patient_entry2)
-
+        #
         # patient3 = User(
         #     name='patient3',
         #     username='patient3',
@@ -269,7 +269,7 @@ if __name__ == '__main__':
         # db.session.commit()
         # patient_entry3 = Patient(id=patient3.id)
         # db.session.add(patient_entry3)
-
+        #
         # nurse1 = User(
         #     name='nurse1',
         #     username='nurse1',
@@ -303,15 +303,15 @@ if __name__ == '__main__':
         # nurse_entry1 = Nurse(id=nurse2.id)
         # db.session.add(nurse_entry1)
         # db.session.commit()
-
-         # #Create appointment lists
+        #
+        #  #Create appointment lists
         # appointment_list1 = AppointmentList(schedule_date=date(2024, 12, 5), nurse_id=5)
         # appointment_list2 = AppointmentList(schedule_date=date(2024, 12, 6), nurse_id=6)
         # db.session.add(appointment_list1)
         # db.session.add(appointment_list2)
         # db.session.commit()
-
-        # Add appointments to the lists
+        #
+        # #Add appointments to the lists
         # appointment1 = Appointment(
         #     description="Tái khám",
         #     schedule_date=date(2024, 11, 5),
@@ -348,7 +348,7 @@ if __name__ == '__main__':
         # db.session.add(appointment3)
         # db.session.add(appointment4)
         # db.session.commit()
-
+        #
         # n3 = User(name='Ha Vi', username='nurse3', password=str(utils.hash_password('1234')), phone="01234567",
         #           gender=Gender.FEMALE,
         #           address='123 HVC, TPHCM', user_role=UserRole.NURSE, email="2251093n1@gmail.com",
@@ -432,4 +432,4 @@ if __name__ == '__main__':
         #
         # db.session.add_all([detail1, detail2, detail3, detail4, detail5])
         # db.session.commit()
-
+        #

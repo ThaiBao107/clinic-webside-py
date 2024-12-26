@@ -911,7 +911,7 @@ def payment_return():
                 db.session.commit()
 
             print("Thanh toán thành công!")
-            return redirect('/return_API')
+            return render_template('/payment/returnAPI.html')
 
     else:
         # Xử lý trường hợp lỗi từ VNPAY
@@ -1069,7 +1069,8 @@ def process_vnpay():
         vnpay_payment_url = vnp.get_payment_url(settings.VNPAY_PAYMENT_URL, settings.VNPAY_HASH_SECRET_KEY)
         print(f"Redirecting to VNPAY: {vnpay_payment_url}")
         # Redirect to VNPAY Payment URL
-        return redirect(vnpay_payment_url)
+        # return redirect(vnpay_payment_url)
+        return render_template(vnpay_payment_url)
     else:
         return render_template('payment/payment.html', title="Thanh toán")
 
