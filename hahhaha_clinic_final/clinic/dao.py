@@ -1,6 +1,6 @@
 # file chứa các hàm xử lý gọi sử lý thêm xóa sửa, kiểm tra v..v
-from datetime import datetime
-
+from datetime import datetime,timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
 from sqlalchemy import func
 
 from clinic import app, db, utils, MAX_PATIENT
@@ -207,7 +207,7 @@ def add_payment(date, sum, nurse_id, medical_id, idGiaoDich, loai):
         p = OfflinePayment(date = datetime.now() ,sum = sum, nurse_id =nurse_id, medicalDetail_id = medical_id, trangthai = Condition.PAID)
 
     else:
-        p = OnlinePayment(date = datetime.now() ,sum = sum, nurse_id =nurse_id, medicalDetail_id = medical_id, paymentType = PaymentGateway.VNPAY
+        p = OnlinePayment(date = datetime.now(),sum = sum, nurse_id =nurse_id, medicalDetail_id = medical_id, paymentType = PaymentGateway.VNPAY
                           ,trangthai = Condition.UNPAID)
 
     return p
@@ -215,10 +215,27 @@ def add_payment(date, sum, nurse_id, medical_id, idGiaoDich, loai):
 
 
 def get_online_payment(payment_id = None):
-    return OnlinePayment.query.filter(OnlinePayment.id == payment_id).first()
+    with app.app_context():
+        return OnlinePayment.query.filter(OnlinePayment.id == payment_id).first()
 
 
 
+def delete_unpaid_orders():
+    now = datetime.now()
+    expiration_time = now - timedelta(minutes=1)
+    with app.app_context():
+        expired_orders = Payment.query.filter(Payment.trangthai == "Condition.UNPAID"
+                                          , Payment.date < expiration_time).all()
+        for order in expired_orders:
+            p = get_online_payment(order.id)
+            db.session.delete(p)
+            db.session.delete(order)
+        db.session.commit()
+    print(f"Deleted {len(expired_orders)} unpaid orders.")
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=delete_unpaid_orders, trigger="interval", minutes=1)  # Chạy mỗi phút
+scheduler.start()
 
 
 

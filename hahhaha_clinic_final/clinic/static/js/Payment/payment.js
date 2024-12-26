@@ -22,13 +22,12 @@ function displayOfflinePayment() {
     inputTienNhan.setAttribute("name", "tien_nhan");
     inputTienNhan.addEventListener("input", () => {
         var total = document.getElementById("total");
-
         var inputTienThoi = document.getElementById("tien_thoi");
         inputTienNhan.setAttribute("value", inputTienNhan.value);
         inputTienThoi.setAttribute("value", (inputTienNhan.value - parseFloat(total.innerText)));
     });
     divTienNhan.appendChild(inputTienNhan);
-
+    var tiennhan1 = document.getElementById('tien_nhan')
     var labelTienNhan = document.createElement("label");
     labelTienNhan.setAttribute("for", "tien_nhan");
     labelTienNhan.innerHTML = "Tiền Nhận"
@@ -54,9 +53,14 @@ function displayOfflinePayment() {
 
     var divXacNhan = document.createElement("div");
     divXacNhan.setAttribute("class", "form-floating mb-3 mt-3 d-flex flex-row-reverse");
+    divXacNhan.setAttribute("id", "xacnhan");
     content.appendChild(divXacNhan);
 
+
+
 }
+
+
 
 function displayOnlinePayment() {
     var content = document.getElementById("xuat-hoa-don");
@@ -168,6 +172,7 @@ function mes()
     var tientra = ""
     if (type === "radio_online")
         tientra = document.getElementById("tien_nhan")
+
     var data = {user_id:id.value , type_payment : type, tien_tra:tientra.value}
      fetch('/api/bills', {
         method: 'POST', // POST vì có dữ liệu gửi lên
