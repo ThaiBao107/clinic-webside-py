@@ -895,52 +895,7 @@ def payment_return():
 
 
 
-@app.route('/return_API', methods=['GET'])
-def return_API():
-    return render_template('payment/returnAPI.html')
 
-@app.route('/payment_return_vnpay', methods=['GET', 'POST'])
-def payment_ipn():
-    input_data = request.args if request.method == 'GET' else request.form
-    print(1)
-    if input_data:
-        # Trích xuất các tham số từ VNPay
-        vnp_TxnRef = input_data.get('vnp_TxnRef')  # Số hóa đơn
-        vnp_Amount = input_data.get('vnp_Amount')  # Số tiền
-        vnp_OrderInfo = input_data.get('vnp_OrderInfo')  # Mô tả đơn hàng
-        vnp_TransactionNo = input_data.get('vnp_TransactionNo')  # Mã giao dịch
-        vnp_ResponseCode = input_data.get('vnp_ResponseCode')  # Mã trạng thái giao dịch
-        vnp_PayDate = input_data.get('vnp_PayDate')  # Ngày giao dịch
-        vnp_BankCode = input_data.get('vnp_BankCode')  # Mã ngân hàng
-        vnp_SecureHash = input_data.get('vnp_SecureHash')  # Chữ ký
-
-        # TODO: Xác minh chữ ký bảo mật (vnp_SecureHash) với secret key của bạn
-        # Giả sử bạn đã có hàm validate_vnpay_signature
-        from hashlib import sha256
-
-
-        def validate_vnpay_signature(data, secret_key):
-            raw_data = sorted(data.items())
-            query_string = "&".join(f"{key}={value}" for key, value in raw_data if key != 'vnp_SecureHash')
-            hash_value = sha256((query_string + secret_key).encode('utf-8')).hexdigest()
-            return hash_value == data.get('vnp_SecureHash')
-
-        secret_key = "YOUR_SECRET_KEY"
-        if not validate_vnpay_signature(input_data, secret_key):
-            return jsonify({"RspCode": "97", "Message": "Invalid Signature"})
-
-        # Kiểm tra trạng thái giao dịch
-        if vnp_ResponseCode == '00':
-            # Xử lý đơn hàng thành công
-            print(f"Payment success for order {vnp_TxnRef} with amount {vnp_Amount}")
-            return jsonify({"RspCode": "00", "Message": "Confirm Success"})
-        else:
-            # Xử lý thất bại
-            print(f"Payment failed for order {vnp_TxnRef}")
-            return jsonify({"RspCode": "01", "Message": "Payment Failed"})
-    else:
-        # Không có dữ liệu hợp lệ
-        return jsonify({"RspCode": "99", "Message": "Invalid Request"})
 
 
 
