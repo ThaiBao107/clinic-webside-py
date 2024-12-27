@@ -363,7 +363,7 @@ def send_mail_appointment(schedule_date):
         row = [
             index,
             patient.name,
-            "Nam" if patient.gender.value == 'male' else "Nữ",
+            "Nam" if patient.gender == Gender.MALE else "Nữ",
             patient.dob.year,
             patient.address
         ]
@@ -413,21 +413,22 @@ def medical_details():
         if patient_id:
             patient_info = User.query.filter_by(id=patient_id).first()
             patient_appoint = Appointment.query.filter_by(patient_id=patient_id, status=Status.CONFIRMED).first()
-            print(patient_appoint)
         # Hành động tìm kiếm bệnh nhân
-        if action == 'search_patient':
-            patient_id = request.form.get('patient_id', "").strip()
-            if Patient.query.filter_by(id=patient_id).first() and patient_appoint:
-                patient_info = User.query.filter_by(id=patient_id).first()
+        if action == 'search_appointment':
+            appointment_id = request.form.get('appointment_id', "").strip()
+            patient_appoint = Appointment.query.filter_by(id=appointment_id).first() #Lấy lịch khám đầu tiên trong  danh sách khám
+            if patient_appoint and patient_appoint.status == Status.CONFIRMED:
+                patient_info = User.query.filter_by(id=patient_appoint.patient_id).first()
 
                 patient_schedule_datetime = datetime.strptime(
                     f"{patient_appoint.schedule_date} {patient_appoint.schedule_time}",
                     "%Y-%m-%d %H:%M:%S"
                 )
-                # patient_schedule_datetime <= current_time or
                 # Kiểm tra bệnh nhân đủ điều kiện khám bệnh. Trễ 15p so với thời gian đã đặt liịch.
-                if patient_appoint.status == Status.COMPLETED or patient_appoint.status == Status.PENDING:
-                    flash("Bệnh nhân hiện tại chưa có lich khám bệnh", category='error')
+                if patient_schedule_datetime <= current_time:
+                    patient_appoint.status = Status.CANCELED
+                    db.session.commit()
+                    flash("Lịch hẹn bệnh nhân đã quá hạn!")
                     return render_template('medical_details/add_medical_details.html', patient_info=None,
                                            patient_appoint=None, drug=drug, units=units, types=types,
                                            drugs_search=drugs_search,
@@ -571,7 +572,7 @@ def add_drug_list():
 
     # Tính tổng số lượng đã sử dụng của thuốc từ bảng DrugDetail
     from sqlalchemy.sql import func
-    total_used_quantity = db.session.query(func.sum(DrugDetail.quatity)) \
+    total_used_quantity = db.session.query(func.sum(DrugDetail.quantity)) \
                               .filter(DrugDetail.drug == drug.id) \
                               .scalar() or 0
 
@@ -610,7 +611,6 @@ def add_drug_list():
 
 @app.route('/api/delete-drug-detail/<drug_detail_id>', methods=['DELETE'])
 def delete_drug_detail(drug_detail_id):
-    print(f'drug_detail_id: {drug_detail_id}')
 
     # Kiểm tra xem drug_list có trong session không
     drug_list = session.get('drug_list', {})
@@ -674,7 +674,7 @@ def add_medical_details():
                 drug_detail = DrugDetail(
                     medicalDetails=new_medical_detail.id,
                     drug=drug.id,
-                    quatity=drug_info['quantity'],
+                    quantity=drug_info['quantity'],
                     description=drug_info['description']
                 )
 
@@ -806,6 +806,31 @@ def history_medical_detail():
                            history_medical=history_medical,
                            user=user)
 
+@app.route('/view-history-detail', methods=['GET'])
+@login_required
+def view_history_detail():
+    medical_id = request.args.get('medical_id', type=int)
+    if not medical_id:
+        flash("Không tìm thấy thông tin chi tiết lịch sử khám bệnh!", "warning")
+        return redirect(url_for('history_medical_details'))
+
+    # Truy vấn thông tin chi tiết khám bệnh
+    medical_details = MedicalDetails.query.filter_by(id=medical_id).first()
+    if not medical_details:
+        flash("Không tìm thấy lịch sử khám bệnh!", "danger")
+        return redirect(url_for('history_medical_details'))
+
+    # Truy vấn danh sách đơn thuốc
+    drug_details = DrugDetail.query.filter_by(medicalDetails=medical_id).all()
+
+    # Lấy thông tin thuốc
+    drugs = {d.id: d for d in Drug.query.all()}
+
+    return render_template('patient/view_detail_history.html',
+                           medical_details=medical_details,
+                           drug_details=drug_details,
+                           drugs=drugs,
+                           user=User.query.all())
 
 @app.route('/payment', methods=['get', 'post'])
 # @nursesnotloggedin
@@ -886,7 +911,7 @@ def payment_return():
                 db.session.commit()
 
             print("Thanh toán thành công!")
-            return redirect('/return_API')
+            return render_template('/payment/returnAPI.html')
 
     else:
         # Xử lý trường hợp lỗi từ VNPAY
@@ -1044,7 +1069,8 @@ def process_vnpay():
         vnpay_payment_url = vnp.get_payment_url(settings.VNPAY_PAYMENT_URL, settings.VNPAY_HASH_SECRET_KEY)
         print(f"Redirecting to VNPAY: {vnpay_payment_url}")
         # Redirect to VNPAY Payment URL
-        return redirect(vnpay_payment_url)
+        # return redirect(vnpay_payment_url)
+        return render_template(vnpay_payment_url)
     else:
         return render_template('payment/payment.html', title="Thanh toán")
 

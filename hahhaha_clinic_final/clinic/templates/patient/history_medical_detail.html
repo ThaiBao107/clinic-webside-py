@@ -27,6 +27,7 @@
                     <div class="d-flex flex-column">
                         <span class="fw-bold text-dark">Ngày Khám: {{ h.create_date.strftime('%d/%m/%Y') }}</span>
                         <span>Chuẩn Đoán: <strong>{{ h.diagnose }}</strong></span>
+                        <span>Mã phiếu khám: <strong>{{ h.id }}</strong></span>
                         <span>Triệu Chứng: {{ h.symptoms }}</span>
                         <span>Bác Sĩ:
                             {% for d in user %}
@@ -37,7 +38,11 @@
                         </span>
                     </div>
                     <div>
-                        <a href="#" class="btn btn-outline-dark btn-sm"><i class="bi bi-eye"></i> Xem chi tiết</a>
+                        <a href="{{ url_for('view_history_detail', medical_id=h.id) }}"
+                           class="btn btn-outline-dark btn-sm">
+                            <i class="bi bi-eye"></i> Xem chi tiết
+                        </a>
+
                     </div>
                 </li>
                 {% endfor %}

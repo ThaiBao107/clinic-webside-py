@@ -52,8 +52,6 @@ function reset_drug_list(){
 }
 
 function delete_drug_detail(drug_detail_id) {
-    alert("ID Drug list muốn xóa: " + drug_detail_id); // Sử dụng alert để kiểm tra giá trị
-
     fetch(`/api/delete-drug-detail/${drug_detail_id}`, {
         method: 'DELETE',  // Dùng phương thức DELETE
     })

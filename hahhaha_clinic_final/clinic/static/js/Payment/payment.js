@@ -167,8 +167,7 @@ function mes()
 
             else
                 type = display[i].value
-    alert(id)
-    alert(type)
+
     var tientra = ""
     if (type === "radio_online")
         tientra = document.getElementById("tien_nhan")
