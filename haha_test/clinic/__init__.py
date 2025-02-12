@@ -17,7 +17,7 @@ app.config['PAGE_SIZE'] = 5
 
 app.config['MAIL_SERVER'] = "smtp.gmail.com"
 app.config['MAIL_USERNAME'] = "phongkhamsaigoncare@gmail.com"
-app.config['MAIL_PASSWORD'] = "picuqcqvzsvgplyk"
+app.config['MAIL_PASSWORD'] = "secrect_pass"
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_PORT'] = 587
 app.config['SUM'] = 100000
@@ -30,7 +30,7 @@ db = SQLAlchemy(app=app)
 cloudinary.config(
        cloud_name = 'dmz9kuzue',
        api_key = '961193598266337',
-       api_secret = 'yWKRKcoNtsmwsdpYhVbosl5X8Ng'
+       api_secret = 'secrect_pass'
 )
 
 login = LoginManager(app=app)
