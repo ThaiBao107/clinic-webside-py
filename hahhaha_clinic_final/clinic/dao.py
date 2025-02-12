@@ -264,22 +264,10 @@ def get_revenue_patient_stats(month, year):
         extract('year', MedicalDetails.create_date) == year
     ).first()
     # mỗi phiếu khám bệnh cộng thêm 100.000 phí khám bệnh mặc định
-    if revenue_stats and revenue_stats.patient_count:
-        # Calculate bonus using app.config['SUM']
-        bonus_amount = revenue_stats.patient_count * app.config['SUM']
-
-        # Add bonus to total revenue
-        total_revenue = float(revenue_stats.total_revenue) if revenue_stats.total_revenue else 0
-        total_with_bonus = total_revenue + bonus_amount
-
-        return {
-            'total_revenue': total_with_bonus,
-            'patient_count': revenue_stats.patient_count
-        }
 
     return {
-        'total_revenue': 0,
-        'patient_count': 0
+        'total_revenue': float(revenue_stats.total_revenue) if revenue_stats.total_revenue else 0,
+        'patient_count': revenue_stats.patient_count if revenue_stats.patient_count else 0
     }
 
 
